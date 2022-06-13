@@ -1,0 +1,9 @@
+version: "3"
+services:
+  mysql:
+    build: .
+    volumes:
+      - ./mysql/db:/docker-entrypoint-initdb.d  #初期データをマウントする場所
+    container_name: mysql_test
+    environment:
+      - MYSQL_ROOT_PASSWORD=root

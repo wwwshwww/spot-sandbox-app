@@ -1,0 +1,17 @@
+version: 3
+
+tasks:
+  redis-cli:
+    cmds:
+      - cd tools/redis && docker-compose up -d
+      - docker exec -it redis_test redis-cli
+  mysql-cli:
+    cmds:
+      - cd tools/mysql && docker-compose up -d
+      - echo Enter "root"
+      - docker exec -it mysql_test mysql -u root -p -h 127.0.0.1
+  docker:clean:
+    cmds:
+      - docker kill redis_test
+      - docker kill mysql_test
+      - docker system prune -f

@@ -1,1 +1,1 @@
-docker-compose run --rm initialize npm install --save $1
+docker-compose run --rm dev npm install --save $1

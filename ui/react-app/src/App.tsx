@@ -3,59 +3,116 @@ import { Box, Button, Stack } from '@mui/material';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 // import './App.css';
+import {mapOptions, mapStyles} from './mapstyle'
 import React from 'react';
 
-const MapContainer = () => {
-  
-  const mapStyles = {
-    height: "500px",
-    width: "500px", 
-  };
-  
-  const defaultCenter = {
+type Location = {
+  index: number
+  latlng: {
+    lat: number
+    lng: number
+  }
+}
+
+interface MapContainerState {
+  locations: Array<Location>
+  markers: Array<JSX.Element>
+}
+
+interface MapContainerProps {
+  dummy: number
+}
+
+class MapContainer extends React.Component<MapContainerProps, MapContainerState> {
+
+  defaultCenter = {
     lat: 41.3851, 
     lng: 2.1734
   }
 
-  const locations = [
-    {
-      name: "Location 1",
-      location: {
-          lat: 41.3954,
-          lng: 2.162
-      },
-  },
-  {
-      name: "Location 2",
-      location: {
-          lat: 41.3917,
-          lng: 2.1649
-      },
-  },
-  ]
+  state: MapContainerState = {
+    locations: [],
+    markers: []
+  }
+
+  // const locations = [
+  //   {
+  //     name: "Location 1",
+  //     location: {
+  //         lat: 41.3954,
+  //         lng: 2.162
+  //     },
+  //   },
+  //   {
+  //       name: "Location 2",
+  //       location: {
+  //           lat: 41.3917,
+  //           lng: 2.1649
+  //       },
+  //   },
+  // ]
   
-  return (
-     <LoadScript
-       googleMapsApiKey='APIKEY'>
+  render(): React.ReactNode {
+    return (
+      <LoadScript
+        googleMapsApiKey='APIKEY'>
         <GoogleMap
           mapContainerStyle={mapStyles}
+          options={mapOptions}
           zoom={13}
-          center={defaultCenter}
+          center={this.defaultCenter}
+          onDblClick={ev => this.createMarker(ev)}
         >
-          <Marker
-            icon={{
-              path: google.maps.SymbolPath.CIRCLE,
-              fillColor: "hsl(100, 100%, 50%)",
-              strokeColor: "hsl(100, 60%, 50%)",
-              fillOpacity: 1,
-              strokeWeight: 2,
-              scale: 8,
-            }}
-            position={locations[0]["location"]}
-          />
+          {this.state.markers}
         </GoogleMap>
-     </LoadScript>
-  )
+      </LoadScript>
+    )
+  }
+
+  createMarker(ev: google.maps.MapMouseEvent) {
+    if (ev.latLng != null){
+      const loc: Location = {
+        index: this.state.locations.length,
+        latlng: {
+          lat: ev.latLng.lat(),
+          lng: ev.latLng.lng()
+        }
+      }
+      
+      this.setState((state) => {
+        let locs = state.locations.concat([loc]);
+        return {
+          locations: locs,
+          markers: this.fill(locs)
+        }
+      })
+    }
+  }
+
+  fill(locations: Array<Location>): Array<JSX.Element> {
+    const ms: Array<JSX.Element> = new Array(locations.length)
+    let h: number = 0
+    for (let i in locations){
+      ms[i] = <Marker
+        icon={{
+          path: google.maps.SymbolPath.CIRCLE,
+          fillColor: "hsl(" + h + ", 100%, 50%)",
+          strokeColor: "hsl(" + h + ", 60%, 35%)",
+          fillOpacity: 0.6,
+          strokeWeight: 1,
+          scale: 8,
+        }}
+        position={locations[i].latlng}
+        label={{
+          color: "hsl(" + h + ", 60%, 35%)",
+          text: String(i),
+          fontSize: "10px"
+        }}
+      />
+      h += 360 / locations.length
+    }
+    return ms
+  }
 }
 
 interface CounterProps {
@@ -115,7 +172,7 @@ class Counter extends React.Component<CounterProps, CounterState>{
 const App: React.FC = () => {
   return (
       <div className="App">
-        <MapContainer/>
+        <MapContainer dummy={0} />
         {/* <Counter initialValue={1} decreVal={1} increVal={1}/> */}
       </div>
   )

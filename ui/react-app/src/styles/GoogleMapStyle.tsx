@@ -1,12 +1,16 @@
 export{mapStyles, mapOptions}
 
 const mapStyles = {
-  height: "500px",
-  width: "500px", 
+  // margin: 20,
+  width: document.documentElement.clientWidth * 0.5,
+  height: document.documentElement.clientWidth * 0.5,
+  minWidth: 400, 
+  minHeight: 400,
 }
 
 const mapOptions = {
   disableDoubleClickZoom: true,
+  draggableCursor: "crosshair" ,
   clickableIcons: false,
   styles: [
     {

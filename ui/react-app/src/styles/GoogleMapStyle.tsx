@@ -1,140 +1,140 @@
-export{mapStyles, mapOptions}
+export { mapStyles, mapOptions };
 
 const mapStyles = {
   // margin: 20,
   width: document.documentElement.clientWidth * 0.5,
   height: document.documentElement.clientWidth * 0.5,
-  minWidth: 400, 
+  minWidth: 400,
   minHeight: 400,
-}
+};
 
 const mapOptions = {
   disableDoubleClickZoom: true,
-  draggableCursor: "crosshair" ,
+  draggableCursor: 'crosshair',
   clickableIcons: false,
   styles: [
     {
-      featureType: "administrative",
-      elementType: "all",
+      featureType: 'administrative',
+      elementType: 'all',
       stylers: [
         {
-            saturation: -100
-        }
-      ]
+          saturation: -100,
+        },
+      ],
     },
     {
-      featureType: "administrative.province",
-      elementType: "all",
+      featureType: 'administrative.province',
+      elementType: 'all',
       stylers: [
         {
-            visibility: "off"
-        }
-      ]
+          visibility: 'off',
+        },
+      ],
     },
     {
-      featureType: "landscape",
-      elementType: "all",
+      featureType: 'landscape',
+      elementType: 'all',
       stylers: [
         {
-            "saturation": -100
+          saturation: -100,
         },
         {
-            "lightness": 65
+          lightness: 65,
         },
         {
-            visibility: "on"
-        }
-      ]
+          visibility: 'on',
+        },
+      ],
     },
     {
-      featureType: "poi",
-      elementType: "all",
+      featureType: 'poi',
+      elementType: 'all',
       stylers: [
         {
-            "saturation": -100
+          saturation: -100,
         },
         {
-            "lightness": 50
+          lightness: 50,
         },
         {
-            visibility: "simplified"
-        }
-      ]
+          visibility: 'simplified',
+        },
+      ],
     },
     {
-      featureType: "road",
-      elementType: "all",
+      featureType: 'road',
+      elementType: 'all',
       stylers: [
         {
-            "saturation": -100
-        }
-      ]
+          saturation: -100,
+        },
+      ],
     },
     {
-      featureType: "road.highway",
-      elementType: "all",
+      featureType: 'road.highway',
+      elementType: 'all',
       stylers: [
         {
-            visibility: "simplified"
-        }
-      ]
+          visibility: 'simplified',
+        },
+      ],
     },
     {
-      featureType: "road.arterial",
-      elementType: "all",
+      featureType: 'road.arterial',
+      elementType: 'all',
       stylers: [
         {
-            "lightness": 30
-        }
-      ]
+          lightness: 30,
+        },
+      ],
     },
     {
-      featureType: "road.local",
-      elementType: "all",
+      featureType: 'road.local',
+      elementType: 'all',
       stylers: [
         {
-            "lightness": 40
-        }
-      ]
+          lightness: 40,
+        },
+      ],
     },
     {
-      featureType: "transit",
-      elementType: "all",
+      featureType: 'transit',
+      elementType: 'all',
       stylers: [
         {
-            "saturation": -100
+          saturation: -100,
         },
         {
-            visibility: "simplified"
-        }
-      ]
+          visibility: 'simplified',
+        },
+      ],
     },
     {
-      featureType: "water",
-      elementType: "geometry",
+      featureType: 'water',
+      elementType: 'geometry',
       stylers: [
         {
-            "hue": "#ffff00"
+          hue: '#ffff00',
         },
         {
-            "lightness": -25
+          lightness: -25,
         },
         {
-            "saturation": -97
-        }
-      ]
+          saturation: -97,
+        },
+      ],
     },
     {
-      featureType: "water",
-      elementType: "labels",
+      featureType: 'water',
+      elementType: 'labels',
       stylers: [
         {
-            "lightness": -25
+          lightness: -25,
         },
         {
-            "saturation": -100
-        }
-      ]
-    }
-  ]
-}
+          saturation: -100,
+        },
+      ],
+    },
+  ],
+};

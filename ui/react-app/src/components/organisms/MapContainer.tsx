@@ -1,7 +1,8 @@
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
 import React from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 import { mapOptions, mapStyles } from '../../styles/GoogleMapStyle';
+import { SpotMarker } from '../atoms/SpotMarker';
 
 type MarkerInfo = {
   position: {
@@ -45,20 +46,11 @@ class MapContainer extends React.Component<
         >
           {this.state.markerInfos.map((m: MarkerInfo) => {
             return (
-              <Marker
-                icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
-                  fillColor: 'hsl(' + m.baseColorH + ', 100%, 75%)',
-                  fillOpacity: 0.8,
-                  strokeWeight: 0,
-                  scale: 8,
-                }}
-                position={m.position}
-                label={{
-                  color: '#333333',
-                  text: m.labelString,
-                  fontSize: '10px',
-                }}
+              <SpotMarker
+                key={m.labelString}
+                baseColor={m.baseColorH}
+                labelText={m.labelString}
+                latlng={m.position}
               />
             );
           })}

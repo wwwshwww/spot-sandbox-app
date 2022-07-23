@@ -8,7 +8,7 @@ const (
 	TravelTime
 )
 
-type DbscanPlofile struct {
+type DbscanProfile struct {
 	Epsilon  float64
 	MinCount *uint64
 	MaxCount *uint64

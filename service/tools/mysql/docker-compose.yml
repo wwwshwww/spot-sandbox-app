@@ -1,9 +1,17 @@
-version: "3"
+# 参考: https://stackoverflow.com/questions/43322033/create-database-on-docker-compose-startup
+
+version: '3'
 services:
-  mysql:
-    build: .
+  db:
+    image: mysql
+    command: --init-file /data/application/init.sql
+    container_name: scapp_mysql
     volumes:
-      - ./mysql/db:/docker-entrypoint-initdb.d  #初期データをマウントする場所
-    container_name: mysql_test
+      - ./init.sql:/data/application/init.sql
+      - ./my.cnf:/etc/my.cnf
     environment:
+      - MYSQL_ROOT_USER=root
       - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=test_db
+    ports:
+      - 33061:3306

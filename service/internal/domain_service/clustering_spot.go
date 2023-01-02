@@ -1,0 +1,424 @@
+package domain_service
+
+import (
+	"context"
+	"errors"
+	"math"
+	"sort"
+	"time"
+
+	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/cache"
+	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/google_maps"
+	"github.com/wwwwshwww/spot-sandbox/internal/common"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
+)
+
+var (
+	majorRadius  = 6378137.0
+	minorRadius  = 6356752.314245
+	eccentricity = math.Sqrt((math.Pow(majorRadius, 2) - math.Pow(minorRadius, 2)) / math.Pow(majorRadius, 2))
+)
+
+type ClusteringService struct {
+	Ctx                 context.Context
+	GoogleMapsClient    *google_maps.GoogleMapsClient
+	DistanceCacheClient *cache.DistanceCacheClient
+	DurationCacheClient *cache.DurationCacheClient
+}
+
+func NewClusteringService(
+	ctz context.Context,
+	gmc *google_maps.GoogleMapsClient,
+	dicc *cache.DistanceCacheClient,
+	ducc *cache.DurationCacheClient,
+) *ClusteringService {
+	return &ClusteringService{
+		Ctx:                 ctz,
+		GoogleMapsClient:    gmc,
+		DistanceCacheClient: dicc,
+		DurationCacheClient: ducc,
+	}
+}
+
+func (c *ClusteringService) DBScan(
+	spots map[spot.Identifier]spot.Spot,
+	dbscanProfile dbscan_profile.DbscanProfile,
+	spotsProfile spots_profile.SpotProfile,
+) (
+	[]cluster_element.ClusterElement,
+	error,
+) {
+	if len(spots) == 0 || len(spotsProfile.Spots()) == 0 {
+		return nil, errors.New("zero spots")
+	}
+
+	// 対象地点を緯度で大きい順にソートする
+	targetSpotIDs := make([]spot.Identifier, len(spotsProfile.Spots()))
+	copy(targetSpotIDs, spotsProfile.Spots())
+	sort.SliceStable(targetSpotIDs, func(i, j int) bool {
+		return spots[targetSpotIDs[i]].Address().Lat() > spots[targetSpotIDs[j]].Address().Lat()
+	})
+
+	// 結果として返すclusterElementの原型を作成
+	clusterElements := make([]cluster_element.ClusterElement, len(targetSpotIDs))
+	for i, si := range targetSpotIDs {
+		clusterElements[i] = cluster_element.New(
+			cluster_element.Identifier(i),
+			dbscanProfile.Identifier(),
+			spotsProfile.Identifier(),
+			si,
+		)
+	}
+
+	// 各種Mapを作成しておく
+	cei2ceMap := make(map[cluster_element.Identifier]cluster_element.ClusterElement, len(clusterElements))
+	for _, ce := range clusterElements {
+		cei2ceMap[ce.Identifier()] = ce
+	}
+	cei2siMap := make(map[cluster_element.Identifier]spot.Identifier, len(clusterElements))
+	si2ceiMap := make(map[spot.Identifier]cluster_element.Identifier, len(clusterElements))
+	for _, ce := range clusterElements {
+		cei2siMap[ce.Identifier()] = ce.SpotIdentifier()
+		si2ceiMap[ce.SpotIdentifier()] = ce.Identifier()
+	}
+
+	// 各地点ごとの近傍ノードを算出
+	var pathMap map[spot.Identifier][]spot.Identifier
+	var err error
+	switch dbscanProfile.DistanceType() {
+	case dbscan_profile.Hubeny:
+		pathMap, err = c.GetPathMapWithInt(
+			spots,
+			targetSpotIDs,
+			*dbscanProfile.MeterThreshold(),
+			c.GetHubenys,
+		)
+	case dbscan_profile.RouteLength:
+		pathMap, err = c.GetPathMapWithInt(
+			spots,
+			targetSpotIDs,
+			*dbscanProfile.MeterThreshold(),
+			c.GetRouteLengths,
+		)
+	case dbscan_profile.TravelTime:
+		pathMap, err = c.GetPathMapWithDuration(
+			spots,
+			targetSpotIDs,
+			*dbscanProfile.DurationThreshold(),
+			c.GetTravelTimes,
+		)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		DBScanによるクラスタリングを行い、クラスタを記録していく。番号の意味は以下の通り。
+		 - 0:		未処理
+		 - -1:		最低個数に満たないクラスタ
+		 - other:	クラスタ番号
+	*/
+	assigns := make(map[int][]cluster_element.Identifier)
+	clsNum := 1
+	for _, ce := range clusterElements {
+		if ce.IsAssigned() {
+			continue
+		}
+
+		assigns[clsNum] = make([]cluster_element.Identifier, 0, len(clusterElements))
+		q := common.NewDeque[cluster_element.Identifier]()
+		q.AppendLeft(ce.Identifier())
+		for q.Len() > 0 {
+			e := q.PopLeft()
+			if cei2ceMap[e].IsAssigned() {
+				continue
+			}
+
+			assigns[clsNum] = append(assigns[clsNum], e)
+			if err := cei2ceMap[e].UpdateAssignedNumber(clsNum); err != nil {
+				return nil, err
+			}
+			if err := cei2ceMap[e].UpdatePaths(common.Map(
+				func(si spot.Identifier) cluster_element.Identifier {
+					return si2ceiMap[si]
+				},
+				pathMap[cei2siMap[e]],
+			)); err != nil {
+				return nil, err
+			}
+
+			for _, neighbor := range pathMap[cei2siMap[e]] {
+				if lim := dbscanProfile.MaxCount(); lim != nil && len(assigns[clsNum]) == int(*lim) {
+					break
+				}
+				if common.Contain(pathMap[neighbor], cei2siMap[e]) {
+					q.Append(si2ceiMap[neighbor])
+				}
+			}
+		}
+
+		if len(assigns[clsNum]) < int(dbscanProfile.MinCount()) {
+			// クラスタの要素数が最小個数に満たない場合はクラスタとみなさない
+			for _, cei := range assigns[clsNum] {
+				if err := cei2ceMap[cei].LackAssign(); err != nil {
+					return nil, err
+				}
+			}
+		} else {
+			// クラスタの要素数が最小個数を満たしている場合はおk
+			clsNum++
+		}
+	}
+
+	return clusterElements, nil
+}
+
+func (c *ClusteringService) GetHubenys(
+	from common.LatLng,
+	tos []common.LatLng,
+) (
+	[]int,
+	error,
+) {
+	fLat := from.Lat * (math.Pi / 180.0)
+	fLng := from.Lng * (math.Pi / 180.0)
+	ds := make([]int, len(tos))
+	for i, to := range tos {
+		tLat := to.Lat * (math.Pi / 180.0)
+		tLng := to.Lng * (math.Pi / 180.0)
+
+		dy := fLat - tLat
+		dx := fLng - tLng
+		p := (fLat + tLat) / 2
+		w := math.Sqrt(1 - math.Pow(eccentricity, 2)*math.Pow(math.Sin(p), 2))
+		m := (majorRadius * (1 - math.Pow(eccentricity, 2))) / math.Pow(w, 3)
+		n := majorRadius / w
+		ds[i] = int(math.Abs(math.Sqrt(math.Pow(dy*m, 2) + math.Pow(dx*n*math.Cos(p), 2))))
+	}
+	return ds, nil
+}
+
+func (c *ClusteringService) GetRouteLengths(
+	from common.LatLng,
+	tos []common.LatLng,
+) (
+	[]int,
+	error,
+) {
+	// キャッシュから距離値の取得を試みる
+	fromTos := make([]cache.FromToLatLng, len(tos))
+	for i, to := range tos {
+		fromTos[i] = cache.FromToLatLng{
+			From: from,
+			To:   to,
+		}
+	}
+	dist, nfIndex, err := c.DistanceCacheClient.BulkGet(c.Ctx, fromTos)
+	if err != nil {
+		return nil, err
+	}
+
+	// キャッシュヒットしなかった箇所がある場合は補完する
+	if len(nfIndex) > 0 {
+		// 補完する分をGoogleMapsから取得する
+		tosN := make([]common.LatLng, len(nfIndex))
+		for i, nf := range nfIndex {
+			tosN[i] = tos[nf]
+		}
+		resDura, resDist, err := c.GoogleMapsClient.GetDurationAndDistanceOneToMany(from, tosN)
+		if err != nil {
+			return nil, err
+		}
+
+		// さきほどキャッシュヒットしなかった箇所を穴埋めする
+		for j, nf := range nfIndex {
+			dist[nf] = &resDist[j]
+		}
+
+		// ついでに新しくキャッシュしておく
+		fromTos := make([]cache.FromToLatLng, len(nfIndex))
+		for j, toN := range tosN {
+			fromTos[j] = cache.FromToLatLng{
+				From: from,
+				To:   toN,
+			}
+		}
+		err = c.DurationCacheClient.BulkSet(c.Ctx, fromTos, resDura)
+		if err != nil {
+			return nil, err
+		}
+		err = c.DistanceCacheClient.BulkSet(c.Ctx, fromTos, resDist)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return common.Map(func(n *int) int { return *n }, dist), nil
+}
+
+func (c *ClusteringService) GetTravelTimes(
+	from common.LatLng,
+	tos []common.LatLng,
+) (
+	[]time.Duration,
+	error,
+) {
+	// キャッシュから距離値の取得を試みる
+	fromTos := make([]cache.FromToLatLng, len(tos))
+	for i, to := range tos {
+		fromTos[i] = cache.FromToLatLng{
+			From: from,
+			To:   to,
+		}
+	}
+	dura, nfIndex, err := c.DurationCacheClient.BulkGet(c.Ctx, fromTos)
+	if err != nil {
+		return nil, err
+	}
+
+	// キャッシュヒットしなかった箇所がある場合は補完する
+	if len(nfIndex) > 0 {
+		// 補完する分をGoogleMapsから取得する
+		tosN := make([]common.LatLng, len(nfIndex))
+		for i, nf := range nfIndex {
+			tosN[i] = tos[nf]
+		}
+		resDura, resDist, err := c.GoogleMapsClient.GetDurationAndDistanceOneToMany(from, tosN)
+		if err != nil {
+			return nil, err
+		}
+
+		// さきほどキャッシュヒットしなかった箇所を穴埋めする
+		for j, nf := range nfIndex {
+			dura[nf] = &resDura[j]
+		}
+
+		// ついでに新しくキャッシュしておく
+		fromTos := make([]cache.FromToLatLng, len(nfIndex))
+		for j, toN := range tosN {
+			fromTos[j] = cache.FromToLatLng{
+				From: from,
+				To:   toN,
+			}
+		}
+		err = c.DurationCacheClient.BulkSet(c.Ctx, fromTos, resDura)
+		if err != nil {
+			return nil, err
+		}
+		err = c.DistanceCacheClient.BulkSet(c.Ctx, fromTos, resDist)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return common.Map(func(n *time.Duration) time.Duration { return *n }, dura), nil
+}
+
+// 近傍ノードを近い順にソート済みの状態で取得する。閾値としてIntを扱うバージョン
+func (c *ClusteringService) GetPathMapWithInt(
+	spots map[spot.Identifier]spot.Spot,
+	spotIDs []spot.Identifier,
+	threshold int,
+	distFn func(origin common.LatLng, dests []common.LatLng) ([]int, error),
+) (map[spot.Identifier][]spot.Identifier, error) {
+	latLngMap := c.GetLatLngMap(spots, spotIDs)
+
+	toLatLngs := make([]common.LatLng, len(spotIDs))
+	for i, dstSpot := range spotIDs {
+		toLatLngs[i] = latLngMap[dstSpot]
+	}
+
+	pathMap := make(map[spot.Identifier][]spot.Identifier)
+	for _, oriSpot := range spotIDs {
+		paths := make([]spot.Identifier, 0, len(spotIDs))
+
+		distances, err := distFn(latLngMap[oriSpot], toLatLngs)
+		if err != nil {
+			return nil, err
+		}
+		spotToDist := make(map[spot.Identifier]int)
+
+		var pruneIndex int
+		for j, si := range spotIDs {
+			spotToDist[si] = distances[j]
+
+			if si != oriSpot {
+				paths = append(paths, si)
+
+				if distances[j] < threshold {
+					pruneIndex++
+				}
+			}
+		}
+		sort.Slice(paths, func(i, j int) bool {
+			return spotToDist[paths[i]] < spotToDist[paths[j]]
+		})
+		paths = paths[:pruneIndex]
+		pathMap[oriSpot] = paths
+	}
+
+	return pathMap, nil
+}
+
+// 近傍ノードを近い順にソート済みの状態で取得する。閾値としてtime.Durationを扱うバージョン
+func (c *ClusteringService) GetPathMapWithDuration(
+	spots map[spot.Identifier]spot.Spot,
+	spotIDs []spot.Identifier,
+	threshold time.Duration,
+	distFn func(origin common.LatLng, dests []common.LatLng) ([]time.Duration, error),
+) (map[spot.Identifier][]spot.Identifier, error) {
+	latLngMap := c.GetLatLngMap(spots, spotIDs)
+
+	toLatLngs := make([]common.LatLng, len(spotIDs))
+	for i, dstSpot := range spotIDs {
+		toLatLngs[i] = latLngMap[dstSpot]
+	}
+
+	pathMap := make(map[spot.Identifier][]spot.Identifier)
+	for _, oriSpot := range spotIDs {
+		paths := make([]spot.Identifier, 0, len(spotIDs))
+
+		distances, err := distFn(latLngMap[oriSpot], toLatLngs)
+		if err != nil {
+			return nil, err
+		}
+		spotToDist := make(map[spot.Identifier]time.Duration)
+
+		var pruneIndex int
+		for j, si := range spotIDs {
+			spotToDist[si] = distances[j]
+
+			if si != oriSpot {
+				paths = append(paths, si)
+
+				if distances[j] < threshold {
+					pruneIndex++
+				}
+			}
+		}
+		sort.Slice(paths, func(i, j int) bool {
+			return spotToDist[paths[i]] < spotToDist[paths[j]]
+		})
+		paths = paths[:pruneIndex]
+		pathMap[oriSpot] = paths
+	}
+
+	return pathMap, nil
+}
+
+func (c *ClusteringService) GetLatLngMap(
+	spots map[spot.Identifier]spot.Spot,
+	spotIDs []spot.Identifier,
+) map[spot.Identifier]common.LatLng {
+	latLngMap := make(map[spot.Identifier]common.LatLng, len(spotIDs))
+	for _, si := range spotIDs {
+		latLngMap[si] = common.LatLng{
+			Lat: spots[si].Address().Lat(),
+			Lng: spots[si].Address().Lng(),
+		}
+	}
+	return latLngMap
+}

@@ -13,37 +13,41 @@ var (
 	ErrDuplicateSpot = errors.New("duplication spot")
 )
 
-type SpotProfile interface {
+type SpotsProfile interface {
 	Identifier() Identifier
 	Spots() []spot.Identifier
 
 	UpdateSpots([]spot.Identifier) error
 }
 
-func New(i Identifier) SpotProfile {
-	return &spotProfile{
+func New(i Identifier) SpotsProfile {
+	return &spotsProfile{
 		identifier: i,
 		spots:      []spot.Identifier{},
 	}
 }
 
-func Restore(i Identifier, spots []spot.Identifier) SpotProfile {
+func Restore(i Identifier, spp SpotsProfilePreferences) SpotsProfile {
 	s := New(i)
-	if err := s.UpdateSpots(spots); err != nil {
+	if err := s.UpdateSpots(spp.Spots); err != nil {
 		panic("resore panic")
 	}
 	return s
 }
 
-type spotProfile struct {
+type SpotsProfilePreferences struct {
+	Spots []spot.Identifier
+}
+
+type spotsProfile struct {
 	identifier Identifier
 	spots      []spot.Identifier
 }
 
-func (e *spotProfile) Identifier() Identifier   { return e.identifier }
-func (e *spotProfile) Spots() []spot.Identifier { return e.spots }
+func (e *spotsProfile) Identifier() Identifier   { return e.identifier }
+func (e *spotsProfile) Spots() []spot.Identifier { return e.spots }
 
-func (e *spotProfile) UpdateSpots(s []spot.Identifier) error {
+func (e *spotsProfile) UpdateSpots(s []spot.Identifier) error {
 	if len(s) > spotMaxCount {
 		return ErrSpotMaxCount
 	}
@@ -51,7 +55,7 @@ func (e *spotProfile) UpdateSpots(s []spot.Identifier) error {
 	return nil
 }
 
-func (e *spotProfile) AppendSpot(s spot.Identifier) error {
+func (e *spotsProfile) AppendSpot(s spot.Identifier) error {
 	if len(e.spots)+1 > spotMaxCount {
 		return ErrSpotMaxCount
 	}

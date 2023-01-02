@@ -24,19 +24,25 @@ func New(i Identifier, a address.Address) Spot {
 
 func Restore(
 	i Identifier,
-	postalCode, addressRepresentation string,
-	lat, lng float64,
+	sp SpotPreferences,
 ) Spot {
 	address, err := address.New(
-		postalCode,
-		addressRepresentation,
-		lat,
-		lng,
+		sp.PostalCode,
+		sp.AddressRepresentation,
+		sp.Lat,
+		sp.Lng,
 	)
 	if err != nil {
 		panic("spot restore error")
 	}
 	return New(i, address)
+}
+
+type SpotPreferences struct {
+	PostalCode            string
+	AddressRepresentation string
+	Lat                   float64
+	Lng                   float64
 }
 
 type spot struct {

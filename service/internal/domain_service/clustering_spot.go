@@ -46,7 +46,7 @@ func NewClusteringService(
 func (c *ClusteringService) DBScan(
 	spots map[spot.Identifier]spot.Spot,
 	dbscanProfile dbscan_profile.DbscanProfile,
-	spotsProfile spots_profile.SpotProfile,
+	spotsProfile spots_profile.SpotsProfile,
 ) (
 	[]cluster_element.ClusterElement,
 	error,

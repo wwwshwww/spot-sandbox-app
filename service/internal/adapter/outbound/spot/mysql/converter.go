@@ -5,10 +5,12 @@ import "github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
 func unmarshal(row Spot) spot.Spot {
 	return spot.Restore(
 		spot.Identifier(row.ID),
-		row.PostalCode,
-		row.AddressRepresentation,
-		row.Lat,
-		row.Lng,
+		spot.SpotPreferences{
+			PostalCode:            row.PostalCode,
+			AddressRepresentation: row.AddressRepresentation,
+			Lat:                   row.Lat,
+			Lng:                   row.Lng,
+		},
 	)
 }
 

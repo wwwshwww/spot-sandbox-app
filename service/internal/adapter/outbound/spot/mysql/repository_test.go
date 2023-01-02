@@ -30,7 +30,15 @@ func TestGet(t *testing.T) {
 	}{
 		{
 			spot.Identifier(1),
-			spot.Restore(spot.Identifier(1), "1000000", "とうきょ", 0.11, 0.11),
+			spot.Restore(
+				spot.Identifier(1),
+				spot.SpotPreferences{
+					PostalCode:            "1000000",
+					AddressRepresentation: "とうきょ",
+					Lat:                   0.11,
+					Lng:                   0.11,
+				},
+			),
 			false,
 		},
 		{
@@ -67,8 +75,24 @@ func TestSave(t *testing.T) {
 		isErr    bool
 	}{
 		{
-			spot.Restore(spot.Identifier(4), "4000000", "とうきょ", 0.44, 0.44),
-			spot.Restore(spot.Identifier(4), "4000000", "ほっかいど", 0.45, 0.45),
+			spot.Restore(
+				spot.Identifier(4),
+				spot.SpotPreferences{
+					PostalCode:            "4000000",
+					AddressRepresentation: "とうきょ",
+					Lat:                   0.44,
+					Lng:                   0.44,
+				},
+			),
+			spot.Restore(
+				spot.Identifier(4),
+				spot.SpotPreferences{
+					PostalCode:            "4000000",
+					AddressRepresentation: "ほっかいど",
+					Lat:                   0.45,
+					Lng:                   0.45,
+				},
+			),
 			false,
 		},
 	}

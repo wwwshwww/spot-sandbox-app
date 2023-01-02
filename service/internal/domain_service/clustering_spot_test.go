@@ -30,45 +30,57 @@ func TestDBScan(t *testing.T) {
 	spots := []spot.Spot{
 		spot.Restore(
 			spot.Identifier(1),
-			"000-0001",
-			"わりと場所1-1",
-			0.0,
-			0.0,
+			spot.SpotPreferences{
+				PostalCode:            "000-0001",
+				AddressRepresentation: "わりと場所1-1",
+				Lat:                   0.0,
+				Lng:                   0.0,
+			},
 		),
 		spot.Restore(
 			spot.Identifier(2),
-			"000-0002",
-			"そこそこ近い場所2-2",
-			0.01,
-			-0.01,
+			spot.SpotPreferences{
+				PostalCode:            "000-0002",
+				AddressRepresentation: "そこそこ近い場所2-2",
+				Lat:                   0.01,
+				Lng:                   -0.01,
+			},
 		),
 		spot.Restore(
 			spot.Identifier(3),
-			"000-0003",
-			"まあまあ近い場所3-3",
-			0.02,
-			-0.02,
+			spot.SpotPreferences{
+				PostalCode:            "000-0003",
+				AddressRepresentation: "まあまあ近い場所3-3",
+				Lat:                   0.02,
+				Lng:                   -0.02,
+			},
 		),
 		spot.Restore(
 			spot.Identifier(4),
-			"000-0003",
-			"たぶん近い場所4-4",
-			0.018,
-			-0.018,
+			spot.SpotPreferences{
+				PostalCode:            "000-0003",
+				AddressRepresentation: "たぶん近い場所4-4",
+				Lat:                   0.018,
+				Lng:                   -0.018,
+			},
 		),
 		spot.Restore(
 			spot.Identifier(5),
-			"000-0003",
-			"ちょっと近い場所5-5",
-			0.019,
-			-0.019,
+			spot.SpotPreferences{
+				PostalCode:            "000-0003",
+				AddressRepresentation: "ちょっと近い場所5-5",
+				Lat:                   0.019,
+				Lng:                   -0.019,
+			},
 		),
 		spot.Restore(
 			spot.Identifier(6),
-			"000-0006",
-			"ふつうに遠い場所6-6",
-			0.16,
-			0.16,
+			spot.SpotPreferences{
+				PostalCode:            "000-0006",
+				AddressRepresentation: "ふつうに遠い場所6-6",
+				Lat:                   0.16,
+				Lng:                   0.16,
+			},
 		),
 	}
 
@@ -77,16 +89,18 @@ func TestDBScan(t *testing.T) {
 		spotMap[s.Identifier()] = s
 	}
 
-	spotProfiles := []spots_profile.SpotProfile{
+	spotProfiles := []spots_profile.SpotsProfile{
 		spots_profile.Restore(
 			spots_profile.Identifier(1),
-			common.Map(func(s spot.Spot) spot.Identifier { return s.Identifier() }, spots),
+			spots_profile.SpotsProfilePreferences{
+				Spots: common.Map(func(s spot.Spot) spot.Identifier { return s.Identifier() }, spots),
+			},
 		),
 	}
 
 	tests := []struct {
 		dp             dbscan_profile.DbscanProfile
-		sp             spots_profile.SpotProfile
+		sp             spots_profile.SpotsProfile
 		expectCountMap map[int]int
 	}{
 		{

@@ -13,7 +13,7 @@ func New(db *gorm.DB) spots_profile.Repository {
 	return Repository{db: db}
 }
 
-func (r Repository) Get(i spots_profile.Identifier) (spots_profile.SpotProfile, error) {
+func (r Repository) Get(i spots_profile.Identifier) (spots_profile.SpotsProfile, error) {
 	var row SpotsProfile
 
 	if err := r.db.
@@ -28,7 +28,7 @@ func (r Repository) Get(i spots_profile.Identifier) (spots_profile.SpotProfile, 
 	return unmarshal(row), nil
 }
 
-func (r Repository) Save(sp spots_profile.SpotProfile) error {
+func (r Repository) Save(sp spots_profile.SpotsProfile) error {
 	if err := r.db.
 		Model(&SpotsProfileSpot{}).
 		Where("spots_profile_id = ?", sp.Identifier()).

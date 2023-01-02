@@ -35,7 +35,7 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // Delete mocks base method.
-func (m *MockRepository) Delete(arg0 spots_profile.SpotProfile) error {
+func (m *MockRepository) Delete(arg0 spots_profile.SpotsProfile) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0)
 	ret0, _ := ret[0].(error)
@@ -49,10 +49,10 @@ func (mr *MockRepositoryMockRecorder) Delete(arg0 interface{}) *gomock.Call {
 }
 
 // Get mocks base method.
-func (m *MockRepository) Get(arg0 spots_profile.Identifier) (spots_profile.SpotProfile, error) {
+func (m *MockRepository) Get(arg0 spots_profile.Identifier) (spots_profile.SpotsProfile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0)
-	ret0, _ := ret[0].(spots_profile.SpotProfile)
+	ret0, _ := ret[0].(spots_profile.SpotsProfile)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -64,7 +64,7 @@ func (mr *MockRepositoryMockRecorder) Get(arg0 interface{}) *gomock.Call {
 }
 
 // Save mocks base method.
-func (m *MockRepository) Save(arg0 spots_profile.SpotProfile) error {
+func (m *MockRepository) Save(arg0 spots_profile.SpotsProfile) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", arg0)
 	ret0, _ := ret[0].(error)

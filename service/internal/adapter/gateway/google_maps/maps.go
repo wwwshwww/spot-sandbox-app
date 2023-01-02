@@ -110,7 +110,7 @@ func (c *GoogleMapsClient) GetDurationAndDistanceManyToOne(
 	return durations, distances, nil
 }
 
-func (c GoogleMapsClient) ReverseGeocode(lat, lng float64) (
+func (c *GoogleMapsClient) ReverseGeocode(lat, lng float64) (
 	postalCode,
 	addressRepresentation string,
 	err error,

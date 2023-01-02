@@ -25,14 +25,16 @@ func TestGet(t *testing.T) {
 
 	var tests = []struct {
 		i     spots_profile.Identifier
-		sp    spots_profile.SpotProfile
+		sp    spots_profile.SpotsProfile
 		isErr bool
 	}{
 		{
 			spots_profile.Identifier(1),
 			spots_profile.Restore(
 				spots_profile.Identifier(1),
-				[]spot.Identifier{11, 12, 13},
+				spots_profile.SpotsProfilePreferences{
+					Spots: []spot.Identifier{11, 12, 13},
+				},
 			),
 			false,
 		},

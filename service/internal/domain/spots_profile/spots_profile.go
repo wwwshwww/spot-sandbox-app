@@ -18,6 +18,8 @@ type SpotsProfile interface {
 	Spots() []spot.Identifier
 
 	UpdateSpots([]spot.Identifier) error
+	AppendSpot(spot.Identifier) error
+	RemoveSpot(spot.Identifier) error
 }
 
 func New(i Identifier) SpotsProfile {
@@ -51,18 +53,26 @@ func (e *spotsProfile) UpdateSpots(s []spot.Identifier) error {
 	if len(s) > spotMaxCount {
 		return ErrSpotMaxCount
 	}
-	e.spots = s
+	e.spots = mapset.NewSet(s...).ToSlice()
 	return nil
 }
 
 func (e *spotsProfile) AppendSpot(s spot.Identifier) error {
-	if len(e.spots)+1 > spotMaxCount {
-		return ErrSpotMaxCount
+	if err := e.UpdateSpots(append(e.spots, s)); err != nil {
+		return err
 	}
-	if mapset.NewSet(e.spots...).Contains(s) {
-		return ErrDuplicateSpot
-	}
+	return nil
+}
 
-	e.spots = append(e.spots, s)
+func (e *spotsProfile) RemoveSpot(s spot.Identifier) error {
+	newSpots := make([]spot.Identifier, 0, len(e.spots))
+	for _, si := range e.spots {
+		if s != si {
+			newSpots = append(newSpots, si)
+		}
+	}
+	if err := e.UpdateSpots(newSpots); err != nil {
+		return err
+	}
 	return nil
 }

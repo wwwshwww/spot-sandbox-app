@@ -2,7 +2,29 @@ package dbscan_profile
 
 import "github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
 
-type DbscanProfile interface {
+type DbscanProfileUsecase interface {
 	Get(dbscan_profile.Identifier) (dbscan_profile.DbscanProfile, error)
 	Save(dbscan_profile.Identifier, dbscan_profile.DbscanProfilePreferences) error
+}
+
+func New(dpr dbscan_profile.Repository) DbscanProfileUsecase {
+	return dbscanProfileUsecase{dpr: dpr}
+}
+
+type dbscanProfileUsecase struct {
+	dpr dbscan_profile.Repository
+}
+
+func (u dbscanProfileUsecase) Get(dpi dbscan_profile.Identifier) (
+	dbscan_profile.DbscanProfile,
+	error,
+) {
+	return nil, nil
+}
+
+func (u dbscanProfileUsecase) Save(
+	dpi dbscan_profile.Identifier,
+	dpp dbscan_profile.DbscanProfilePreferences,
+) error {
+	return nil
 }

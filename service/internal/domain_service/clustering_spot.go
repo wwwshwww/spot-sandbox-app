@@ -22,11 +22,22 @@ var (
 	eccentricity = math.Sqrt((math.Pow(majorRadius, 2) - math.Pow(minorRadius, 2)) / math.Pow(majorRadius, 2))
 )
 
-type ClusteringService struct {
-	Ctx                 context.Context
-	GoogleMapsClient    *google_maps.GoogleMapsClient
-	DistanceCacheClient *cache.DistanceCacheClient
-	DurationCacheClient *cache.DurationCacheClient
+type ClusteringService interface {
+	DBScan(
+		map[spot.Identifier]spot.Spot,
+		dbscan_profile.DbscanProfile,
+		spots_profile.SpotsProfile,
+	) (
+		[]cluster_element.ClusterElement,
+		error,
+	)
+}
+
+type clusteringService struct {
+	ctx                 context.Context
+	googleMapsClient    *google_maps.GoogleMapsClient
+	distanceCacheClient *cache.DistanceCacheClient
+	durationCacheClient *cache.DurationCacheClient
 }
 
 func NewClusteringService(
@@ -34,16 +45,16 @@ func NewClusteringService(
 	gmc *google_maps.GoogleMapsClient,
 	dicc *cache.DistanceCacheClient,
 	ducc *cache.DurationCacheClient,
-) *ClusteringService {
-	return &ClusteringService{
-		Ctx:                 ctz,
-		GoogleMapsClient:    gmc,
-		DistanceCacheClient: dicc,
-		DurationCacheClient: ducc,
+) ClusteringService {
+	return &clusteringService{
+		ctx:                 ctz,
+		googleMapsClient:    gmc,
+		distanceCacheClient: dicc,
+		durationCacheClient: ducc,
 	}
 }
 
-func (c *ClusteringService) DBScan(
+func (c *clusteringService) DBScan(
 	spots map[spot.Identifier]spot.Spot,
 	dbscanProfile dbscan_profile.DbscanProfile,
 	spotsProfile spots_profile.SpotsProfile,
@@ -176,7 +187,7 @@ func (c *ClusteringService) DBScan(
 	return clusterElements, nil
 }
 
-func (c *ClusteringService) GetHubenys(
+func (c *clusteringService) GetHubenys(
 	from common.LatLng,
 	tos []common.LatLng,
 ) (
@@ -201,7 +212,7 @@ func (c *ClusteringService) GetHubenys(
 	return ds, nil
 }
 
-func (c *ClusteringService) GetRouteLengths(
+func (c *clusteringService) GetRouteLengths(
 	from common.LatLng,
 	tos []common.LatLng,
 ) (
@@ -216,7 +227,7 @@ func (c *ClusteringService) GetRouteLengths(
 			To:   to,
 		}
 	}
-	dist, nfIndex, err := c.DistanceCacheClient.BulkGet(c.Ctx, fromTos)
+	dist, nfIndex, err := c.distanceCacheClient.BulkGet(c.ctx, fromTos)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +239,7 @@ func (c *ClusteringService) GetRouteLengths(
 		for i, nf := range nfIndex {
 			tosN[i] = tos[nf]
 		}
-		resDura, resDist, err := c.GoogleMapsClient.GetDurationAndDistanceOneToMany(from, tosN)
+		resDura, resDist, err := c.googleMapsClient.GetDurationAndDistanceOneToMany(from, tosN)
 		if err != nil {
 			return nil, err
 		}
@@ -246,11 +257,11 @@ func (c *ClusteringService) GetRouteLengths(
 				To:   toN,
 			}
 		}
-		err = c.DurationCacheClient.BulkSet(c.Ctx, fromTos, resDura)
+		err = c.durationCacheClient.BulkSet(c.ctx, fromTos, resDura)
 		if err != nil {
 			return nil, err
 		}
-		err = c.DistanceCacheClient.BulkSet(c.Ctx, fromTos, resDist)
+		err = c.distanceCacheClient.BulkSet(c.ctx, fromTos, resDist)
 		if err != nil {
 			return nil, err
 		}
@@ -259,7 +270,7 @@ func (c *ClusteringService) GetRouteLengths(
 	return common.Map(func(n *int) int { return *n }, dist), nil
 }
 
-func (c *ClusteringService) GetTravelTimes(
+func (c *clusteringService) GetTravelTimes(
 	from common.LatLng,
 	tos []common.LatLng,
 ) (
@@ -274,7 +285,7 @@ func (c *ClusteringService) GetTravelTimes(
 			To:   to,
 		}
 	}
-	dura, nfIndex, err := c.DurationCacheClient.BulkGet(c.Ctx, fromTos)
+	dura, nfIndex, err := c.durationCacheClient.BulkGet(c.ctx, fromTos)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +297,7 @@ func (c *ClusteringService) GetTravelTimes(
 		for i, nf := range nfIndex {
 			tosN[i] = tos[nf]
 		}
-		resDura, resDist, err := c.GoogleMapsClient.GetDurationAndDistanceOneToMany(from, tosN)
+		resDura, resDist, err := c.googleMapsClient.GetDurationAndDistanceOneToMany(from, tosN)
 		if err != nil {
 			return nil, err
 		}
@@ -304,11 +315,11 @@ func (c *ClusteringService) GetTravelTimes(
 				To:   toN,
 			}
 		}
-		err = c.DurationCacheClient.BulkSet(c.Ctx, fromTos, resDura)
+		err = c.durationCacheClient.BulkSet(c.ctx, fromTos, resDura)
 		if err != nil {
 			return nil, err
 		}
-		err = c.DistanceCacheClient.BulkSet(c.Ctx, fromTos, resDist)
+		err = c.distanceCacheClient.BulkSet(c.ctx, fromTos, resDist)
 		if err != nil {
 			return nil, err
 		}
@@ -318,7 +329,7 @@ func (c *ClusteringService) GetTravelTimes(
 }
 
 // 近傍ノードを近い順にソート済みの状態で取得する。閾値としてIntを扱うバージョン
-func (c *ClusteringService) GetPathMapWithInt(
+func (c *clusteringService) GetPathMapWithInt(
 	spots map[spot.Identifier]spot.Spot,
 	spotIDs []spot.Identifier,
 	threshold int,
@@ -364,7 +375,7 @@ func (c *ClusteringService) GetPathMapWithInt(
 }
 
 // 近傍ノードを近い順にソート済みの状態で取得する。閾値としてtime.Durationを扱うバージョン
-func (c *ClusteringService) GetPathMapWithDuration(
+func (c *clusteringService) GetPathMapWithDuration(
 	spots map[spot.Identifier]spot.Spot,
 	spotIDs []spot.Identifier,
 	threshold time.Duration,
@@ -409,7 +420,7 @@ func (c *ClusteringService) GetPathMapWithDuration(
 	return pathMap, nil
 }
 
-func (c *ClusteringService) GetLatLngMap(
+func (c *clusteringService) GetLatLngMap(
 	spots map[spot.Identifier]spot.Spot,
 	spotIDs []spot.Identifier,
 ) map[spot.Identifier]common.LatLng {

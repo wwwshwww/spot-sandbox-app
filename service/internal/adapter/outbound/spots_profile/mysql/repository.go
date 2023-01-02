@@ -62,3 +62,15 @@ func (r Repository) Delete(i spots_profile.Identifier) error {
 	}
 	return nil
 }
+
+func (r Repository) NextIdentifier() (spots_profile.Identifier, error) {
+	row := SpotsProfile{}
+	if err := r.db.Save(&row).Error; err != nil {
+		return 0, err
+	}
+	if err := r.db.Save(row).Error; err != nil {
+		return 0, err
+	}
+
+	return spots_profile.Identifier(row.ID), nil
+}

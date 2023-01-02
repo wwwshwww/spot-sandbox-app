@@ -45,3 +45,15 @@ func (r Repository) Delete(i dbscan_profile.Identifier) error {
 	}
 	return nil
 }
+
+func (r Repository) NextIdentifier() (dbscan_profile.Identifier, error) {
+	row := DbscanProfile{}
+	if err := r.db.Save(&row).Error; err != nil {
+		return 0, err
+	}
+	if err := r.db.Save(row).Error; err != nil {
+		return 0, err
+	}
+
+	return dbscan_profile.Identifier(row.ID), nil
+}

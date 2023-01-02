@@ -106,6 +106,36 @@ func (mr *MockRepositoryMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRepository)(nil).Get), arg0)
 }
 
+// NextIdentifier mocks base method.
+func (m *MockRepository) NextIdentifier() (spot.Identifier, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NextIdentifier")
+	ret0, _ := ret[0].(spot.Identifier)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NextIdentifier indicates an expected call of NextIdentifier.
+func (mr *MockRepositoryMockRecorder) NextIdentifier() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NextIdentifier", reflect.TypeOf((*MockRepository)(nil).NextIdentifier))
+}
+
+// NextIdentifiers mocks base method.
+func (m *MockRepository) NextIdentifiers(arg0 uint) ([]spot.Identifier, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NextIdentifiers", arg0)
+	ret0, _ := ret[0].([]spot.Identifier)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NextIdentifiers indicates an expected call of NextIdentifiers.
+func (mr *MockRepositoryMockRecorder) NextIdentifiers(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NextIdentifiers", reflect.TypeOf((*MockRepository)(nil).NextIdentifiers), arg0)
+}
+
 // Save mocks base method.
 func (m *MockRepository) Save(arg0 spot.Spot) error {
 	m.ctrl.T.Helper()

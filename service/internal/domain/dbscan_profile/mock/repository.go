@@ -63,6 +63,21 @@ func (mr *MockRepositoryMockRecorder) Get(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRepository)(nil).Get), arg0)
 }
 
+// NextIdentifier mocks base method.
+func (m *MockRepository) NextIdentifier() (dbscan_profile.Identifier, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NextIdentifier")
+	ret0, _ := ret[0].(dbscan_profile.Identifier)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NextIdentifier indicates an expected call of NextIdentifier.
+func (mr *MockRepositoryMockRecorder) NextIdentifier() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NextIdentifier", reflect.TypeOf((*MockRepository)(nil).NextIdentifier))
+}
+
 // Save mocks base method.
 func (m *MockRepository) Save(arg0 dbscan_profile.DbscanProfile) error {
 	m.ctrl.T.Helper()

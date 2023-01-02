@@ -100,3 +100,37 @@ func (r Repository) BulkDelete(is []spot.Identifier) error {
 
 	return nil
 }
+
+func (r Repository) NextIdentifier() (spot.Identifier, error) {
+	ids, err := r.NextIdentifiers(1)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(ids) != 1 {
+		panic("NextIdentifiers didn't provide exactly 1 identifier")
+	}
+
+	return ids[0], nil
+}
+
+func (r Repository) NextIdentifiers(n uint) ([]spot.Identifier, error) {
+	if n == 0 {
+		return nil, nil
+	}
+
+	rows := make([]Spot, n)
+	if err := r.db.Save(&rows).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.Save(rows).Error; err != nil {
+		return nil, err
+	}
+
+	ids := make([]spot.Identifier, n)
+	for i, row := range rows {
+		ids[i] = spot.Identifier(row.ID)
+	}
+
+	return ids, nil
+}

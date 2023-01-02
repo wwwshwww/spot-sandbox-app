@@ -6,4 +6,5 @@ type Repository interface {
 	Get(Identifier) (DbscanProfile, error)
 	Save(DbscanProfile) error
 	Delete(Identifier) error
+	NextIdentifier() (Identifier, error)
 }

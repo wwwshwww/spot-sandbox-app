@@ -6,4 +6,5 @@ type Repository interface {
 	Get(Identifier) (SpotsProfile, error)
 	Save(SpotsProfile) error
 	Delete(Identifier) error
+	NextIdentifier() (Identifier, error)
 }

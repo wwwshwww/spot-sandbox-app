@@ -9,4 +9,6 @@ type Repository interface {
 	BulkSave([]Spot) error
 	Delete(Identifier) error
 	BulkDelete([]Identifier) error
+	NextIdentifier() (Identifier, error)
+	NextIdentifiers(uint) ([]Identifier, error)
 }

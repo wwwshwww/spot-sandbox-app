@@ -1,10 +1,14 @@
 package spot
 
-import "github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+import (
+	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/google_maps"
+	"github.com/wwwwshwww/spot-sandbox/internal/common"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+)
 
 type SpotUsecase interface {
 	Get(spot.Identifier) (spot.Spot, error)
-	Save(spot.Identifier, spot.SpotPreferences) error
+	Save(spot.Identifier, common.LatLng) error
 }
 
 func New(sr spot.Repository) SpotUsecase {
@@ -13,6 +17,7 @@ func New(sr spot.Repository) SpotUsecase {
 
 type spotUsecase struct {
 	sr spot.Repository
+	gm google_maps.GoogleMapsClient
 }
 
 func (u spotUsecase) Get(si spot.Identifier) (
@@ -28,7 +33,7 @@ func (u spotUsecase) Get(si spot.Identifier) (
 
 func (u spotUsecase) Save(
 	si spot.Identifier,
-	sp spot.SpotPreferences,
+	latlng common.LatLng,
 ) error {
 	s, err := u.sr.Get(si)
 	if err != nil {
@@ -37,7 +42,18 @@ func (u spotUsecase) Save(
 	if s == nil {
 		s = spot.New(si)
 	}
-	if err := s.Overwrite(sp); err != nil {
+	postalCode, addrRepr, err := u.gm.ReverseGeocode(latlng.Lat, latlng.Lng)
+	if err != nil {
+		return err
+	}
+	if err := s.Overwrite(
+		spot.SpotPreferences{
+			PostalCode:            postalCode,
+			AddressRepresentation: addrRepr,
+			Lat:                   latlng.Lat,
+			Lng:                   latlng.Lng,
+		},
+	); err != nil {
 		return err
 	}
 	if err := u.sr.Save(s); err != nil {

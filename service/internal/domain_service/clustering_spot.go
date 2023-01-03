@@ -62,8 +62,14 @@ func (c *clusteringService) DBScan(
 	[]cluster_element.ClusterElement,
 	error,
 ) {
+	if spotsProfile == nil {
+		return nil, errors.New("spots profile is nil")
+	}
+	if dbscanProfile == nil {
+		return nil, errors.New("dbscan profile not found")
+	}
 	if len(spots) == 0 || len(spotsProfile.Spots()) == 0 {
-		return nil, errors.New("zero spots")
+		return nil, errors.New("zero spot")
 	}
 
 	// 対象地点を緯度で大きい順にソートする
@@ -133,40 +139,50 @@ func (c *clusteringService) DBScan(
 		 - other:	クラスタ番号
 	*/
 	assigns := make(map[int][]cluster_element.Identifier)
+	limit := dbscanProfile.MaxCount()
+	isFull := func(l []cluster_element.Identifier) bool {
+		return limit != nil && len(l) == int(*limit)
+	}
+
 	clsNum := 1
 	for _, ce := range clusterElements {
 		if ce.IsAssigned() {
 			continue
 		}
-
 		assigns[clsNum] = make([]cluster_element.Identifier, 0, len(clusterElements))
+
 		q := common.NewDeque[cluster_element.Identifier]()
 		q.AppendLeft(ce.Identifier())
 		for q.Len() > 0 {
-			e := q.PopLeft()
-			if cei2ceMap[e].IsAssigned() {
+			cei := q.PopLeft()
+			if isFull(assigns[clsNum]) {
 				continue
 			}
+			si := cei2siMap[cei]
 
-			assigns[clsNum] = append(assigns[clsNum], e)
-			if err := cei2ceMap[e].UpdateAssignedNumber(clsNum); err != nil {
+			// clsNumのクラスタに所属させる
+			assigns[clsNum] = append(assigns[clsNum], cei)
+			if err := cei2ceMap[cei].UpdateAssignedNumber(clsNum); err != nil {
 				return nil, err
 			}
-			if err := cei2ceMap[e].UpdatePaths(common.Map(
-				func(si spot.Identifier) cluster_element.Identifier {
-					return si2ceiMap[si]
+			if err := cei2ceMap[cei].UpdatePaths(common.Map(
+				func(i spot.Identifier) cluster_element.Identifier {
+					return si2ceiMap[i]
 				},
-				pathMap[cei2siMap[e]],
+				pathMap[si],
 			)); err != nil {
 				return nil, err
 			}
 
-			for _, neighbor := range pathMap[cei2siMap[e]] {
-				if lim := dbscanProfile.MaxCount(); lim != nil && len(assigns[clsNum]) == int(*lim) {
-					break
+			// 近傍ノードの探索
+			for _, nsi := range pathMap[si] {
+				ncei := si2ceiMap[nsi]
+				if cei2ceMap[ncei].IsAssigned() {
+					continue
 				}
-				if common.Contain(pathMap[neighbor], cei2siMap[e]) {
-					q.Append(si2ceiMap[neighbor])
+				// 双方向で近傍とみなせる場合のみ所属候補とする
+				if common.Contain(pathMap[nsi], si) {
+					q.Append(ncei)
 				}
 			}
 		}

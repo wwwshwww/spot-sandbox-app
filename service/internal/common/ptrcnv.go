@@ -1,6 +1,6 @@
 package common
 
-func ToV[T any](in *T) T {
+func P2V[T any](in *T) T {
 	var out T
 	if in == nil {
 		return out

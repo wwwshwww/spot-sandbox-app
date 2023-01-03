@@ -25,6 +25,24 @@ func TestDBScan(t *testing.T) {
 				MeterThreshold: func(n int) *int { return &n }(10000),
 			},
 		),
+		dbscan_profile.Restore(
+			dbscan_profile.Identifier(2),
+			dbscan_profile.DbscanProfilePreferences{
+				DistanceType:   dbscan_profile.Hubeny,
+				MinCount:       0,
+				MaxCount:       func(n uint) *uint { return &n }(3),
+				MeterThreshold: func(n int) *int { return &n }(10000),
+			},
+		),
+		dbscan_profile.Restore(
+			dbscan_profile.Identifier(3),
+			dbscan_profile.DbscanProfilePreferences{
+				DistanceType:   dbscan_profile.Hubeny,
+				MinCount:       2,
+				MaxCount:       func(n uint) *uint { return &n }(2),
+				MeterThreshold: func(n int) *int { return &n }(10000),
+			},
+		),
 	}
 
 	spots := []spot.Spot{
@@ -77,7 +95,7 @@ func TestDBScan(t *testing.T) {
 			spot.Identifier(6),
 			spot.SpotPreferences{
 				PostalCode:            "000-0006",
-				AddressRepresentation: "ふつうに遠い場所6-6",
+				AddressRepresentation: "1から25000mくらい離れてる場所6",
 				Lat:                   0.16,
 				Lng:                   0.16,
 			},
@@ -110,6 +128,24 @@ func TestDBScan(t *testing.T) {
 				1: 1,
 				2: 5,
 			},
+		},
+		{
+			dbscanProfiles[1],
+			spotProfiles[0],
+			map[int]int{
+				1: 1,
+				2: 3,
+				3: 2,
+			},
+		},
+		{
+			dbscanProfiles[2],
+			spotProfiles[0],
+			map[int]int{
+				-1: 2,
+				1:  2,
+				2:  2,
+			}, // 分類される要素数が[1,2,2,1]となりMinCount2に満たないやつが2つ出る
 		},
 	}
 

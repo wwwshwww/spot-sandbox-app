@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/rdb"
-	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/mysql"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot/mysql"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 )
 
 const testDB = "spot_test"

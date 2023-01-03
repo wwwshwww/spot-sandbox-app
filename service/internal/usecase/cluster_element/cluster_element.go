@@ -3,7 +3,7 @@ package cluster_element
 import (
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain_service"
 )

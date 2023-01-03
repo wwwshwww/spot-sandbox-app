@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	spot "github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	spot "github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 )
 
 // MockRepository is a mock of Repository interface.

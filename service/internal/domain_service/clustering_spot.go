@@ -12,7 +12,7 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
 )
 
@@ -92,12 +92,10 @@ func (c *clusteringService) DBScan(
 
 	// 各種Mapを作成しておく
 	cei2ceMap := make(map[cluster_element.Identifier]cluster_element.ClusterElement, len(clusterElements))
-	for _, ce := range clusterElements {
-		cei2ceMap[ce.Identifier()] = ce
-	}
 	cei2siMap := make(map[cluster_element.Identifier]spot.Identifier, len(clusterElements))
 	si2ceiMap := make(map[spot.Identifier]cluster_element.Identifier, len(clusterElements))
 	for _, ce := range clusterElements {
+		cei2ceMap[ce.Identifier()] = ce
 		cei2siMap[ce.Identifier()] = ce.SpotIdentifier()
 		si2ceiMap[ce.SpotIdentifier()] = ce.Identifier()
 	}

@@ -45,7 +45,9 @@ func New(i Identifier) DbscanProfile {
 
 func Restore(i Identifier, p DbscanProfilePreferences) DbscanProfile {
 	dp := New(i)
-	dp.Overwrite(p)
+	if err := dp.Overwrite(p); err != nil {
+		panic("restore dbscan profile error")
+	}
 	return dp
 }
 

@@ -1,6 +1,6 @@
 package spot_mysql
 
-import "github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+import "github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 
 func unmarshal(row Spot) spot.Spot {
 	return spot.Restore(

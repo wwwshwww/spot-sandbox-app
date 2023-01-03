@@ -1,6 +1,6 @@
 package model
 
-import "github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+import "github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 
 type SpotsProfile struct {
 	ID      string            `json:"id"`

@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/rdb"
 	spots_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spots_profile/mysql"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
 	"gorm.io/gorm"
 )

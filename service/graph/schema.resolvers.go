@@ -7,8 +7,19 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
+	dbscan_profile_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/dbscan_profile/graph"
+	spot_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/spot/graph"
+	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/mysql"
+	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot/mysql"
+	spot_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot_finder/mysql"
+	dbscan_profile_domain "github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot_finder"
+	"github.com/wwwwshwww/spot-sandbox/internal/usecase/dbscan_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/usecase/spot"
 )
 
 // DbscanProfile is the resolver for the dbscanProfile field.
@@ -28,12 +39,86 @@ func (r *clusterElementResolver) Spot(ctx context.Context, obj *model.ClusterEle
 
 // CreateDbscanProfile is the resolver for the createDbscanProfile field.
 func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.NewDbscanProfile) (*model.DbscanProfile, error) {
-	panic(fmt.Errorf("not implemented: CreateDbscanProfile - createDbscanProfile"))
+	dpr := dbscan_profile_mysql.New(r.DB)
+	dpuc := dbscan_profile.New(dpr)
+
+	i, err := dpr.NextIdentifier()
+	if err != nil {
+		return nil, err
+	}
+	// TODO: refactor
+	p := dbscan_profile_domain.DbscanProfilePreferences{
+		DistanceType: dbscan_profile_graph.UnmarshalDistanceType(input.DistanceType),
+		MinCount:     uint(input.MinCount),
+		MaxCount: func(n *int) *uint {
+			if n == nil {
+				return nil
+			} else {
+				nn := uint(*n)
+				return &nn
+			}
+		}(input.MaxCount),
+		MeterThreshold: input.MeterThreshold,
+		DurationThreshold: func(n *int) *time.Duration {
+			if n == nil {
+				return nil
+			} else {
+				d := time.Duration(time.Minute * time.Duration(*n))
+				return &d
+			}
+		}(input.MinutesThreshold),
+	}
+	if err := dpuc.Save(i, p); err != nil {
+		return nil, err
+	}
+	dp, err := dpuc.Get(i)
+	if err != nil {
+		return nil, err
+	}
+	mdp := &model.DbscanProfile{
+		ID:           strconv.Itoa(int(dp.Identifier())),
+		DistanceType: dbscan_profile_graph.MarshalDistanceType(dp.DistanceType()),
+		MinCount:     int(dp.MinCount()),
+		MaxCount: func(n *uint) *int {
+			if n == nil {
+				return nil
+			} else {
+				nn := int(*n)
+				return &nn
+			}
+		}(dp.MaxCount()),
+		MeterThreshold: dp.MeterThreshold(),
+		MinutesThreshold: func(d *time.Duration) *int {
+			if d == nil {
+				return nil
+			} else {
+				m := int(d.Minutes())
+				return &m
+			}
+		}(dp.DurationThreshold()),
+	}
+	return mdp, nil
 }
 
 // Spots is the resolver for the spots field.
 func (r *queryResolver) Spots(ctx context.Context) ([]*model.Spot, error) {
-	panic(fmt.Errorf("not implemented: Spots - spots"))
+	sr := spot_mysql.New(r.DB)
+	sf := spot_finder_mysql.New(r.DB)
+	suc := spot.New(sr, sf, r.GMC)
+
+	sis, err := suc.ListAllSpots(spot_finder.FilteringOptions{})
+	if err != nil {
+		return nil, err
+	}
+	sMap, err := suc.BulkGet(sis)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.Spot, len(sis))
+	for i, v := range sis {
+		result[i] = spot_graph.Marshal(sMap[v])
+	}
+	return result, nil
 }
 
 // Spots is the resolver for the spots field.

@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 )
 
 var (

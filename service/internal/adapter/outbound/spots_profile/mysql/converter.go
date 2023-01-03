@@ -1,7 +1,7 @@
 package spots_profile_mysql
 
 import (
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
 )
 

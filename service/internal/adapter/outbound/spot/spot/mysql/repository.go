@@ -2,7 +2,7 @@ package spot_mysql
 
 import (
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
 	"gorm.io/gorm"
 )
 

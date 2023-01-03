@@ -1,0 +1,56 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+enum DistanceType {
+  HUBENY
+  ROUTE_LENGTH
+  TRAVEL_TIME
+}
+
+type DbscanProfile {
+  id: ID!
+  distanceType: DistanceType!
+  minCount: Int!
+  maxCount: Int
+  meterThreshold: Int
+	minutesThreshold: Int
+}
+
+type SpotsProfile {
+  id: ID!
+  spots: [Spot!]!
+}
+
+type Spot {
+  id: ID!
+  postalCode: String!
+  addressRepr: String!
+  lat: Float!
+  lng: Float!
+}
+
+type ClusterElement {
+  id: ID!
+	dbscanProfile: DbscanProfile!
+	spotsProfile:  SpotsProfile!
+	spot: Spot!
+	assignedNumber: Int!
+	paths: [ClusterElement!]!
+}
+
+type Query {
+  spots: [Spot!]!
+}
+
+input NewDbscanProfile {
+  distanceType: DistanceType!
+  minCount: Int!
+  maxCount: Int
+  meterThreshold: Int
+  minutesThreshold: Int
+}
+
+type Mutation {
+  createDbscanProfile(input: NewDbscanProfile!): DbscanProfile!
+}

@@ -16,7 +16,3 @@ tasks:
       - docker kill scapp_redis
       - docker kill scapp_mysql
       - docker system prune -f
-  qlgen:
-    cmds: 
-      - go mod download all
-      - go generate ./...

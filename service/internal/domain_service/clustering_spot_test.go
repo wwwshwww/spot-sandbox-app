@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
@@ -142,9 +143,9 @@ func TestDBScan(t *testing.T) {
 			dbscanProfiles[2],
 			spotProfiles[0],
 			map[int]int{
-				-1: 2,
-				1:  2,
-				2:  2,
+				cluster_element.CLUSTER_LACK: 2,
+				1:                            2,
+				2:                            2,
 			}, // 分類される要素数が[1,2,2,1]となりMinCount2に満たないやつが2つ出る
 		},
 	}

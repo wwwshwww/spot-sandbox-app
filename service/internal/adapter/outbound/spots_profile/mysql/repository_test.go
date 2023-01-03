@@ -39,9 +39,9 @@ func TestGet(t *testing.T) {
 			false,
 		},
 		{
-			spots_profile.Identifier(2),
+			spots_profile.Identifier(999),
 			nil,
-			true,
+			false,
 		},
 	}
 
@@ -63,15 +63,15 @@ func prepareDB(t *testing.T, db *gorm.DB) *gorm.DB {
 			SpotsProfileSpots: []spots_profile_mysql.SpotsProfileSpot{
 				{
 					SpotsProfileID: 1,
-					SpotsID:        11,
+					SpotID:         12,
 				},
 				{
 					SpotsProfileID: 1,
-					SpotsID:        12,
+					SpotID:         13,
 				},
 				{
 					SpotsProfileID: 1,
-					SpotsID:        13,
+					SpotID:         11,
 				},
 			},
 		},

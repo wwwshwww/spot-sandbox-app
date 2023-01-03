@@ -12,7 +12,7 @@ func unmarshal(row SpotsProfile) spots_profile.SpotsProfile {
 			Spots: func(sps []SpotsProfileSpot) []spot.Identifier {
 				spots := make([]spot.Identifier, len(sps))
 				for i := range sps {
-					spots[i] = spot.Identifier(sps[i].SpotsID)
+					spots[i] = spot.Identifier(sps[i].SpotID)
 				}
 				return spots
 			}(row.SpotsProfileSpots),
@@ -28,7 +28,7 @@ func marshal(sp spots_profile.SpotsProfile) SpotsProfile {
 			for i := range spots {
 				sps[i] = SpotsProfileSpot{
 					SpotsProfileID: sp.Identifier().Value(),
-					SpotsID:        spots[i].Value(),
+					SpotID:         spots[i].Value(),
 				}
 			}
 			return sps

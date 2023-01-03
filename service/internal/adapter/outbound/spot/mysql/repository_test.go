@@ -42,9 +42,9 @@ func TestGet(t *testing.T) {
 			false,
 		},
 		{
-			spot.Identifier(3),
+			spot.Identifier(999),
 			nil,
-			true,
+			false,
 		},
 	}
 

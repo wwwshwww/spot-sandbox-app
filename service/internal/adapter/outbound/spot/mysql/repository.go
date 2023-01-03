@@ -20,11 +20,7 @@ func (r Repository) Get(i spot.Identifier) (spot.Spot, error) {
 		return nil, err
 	}
 
-	s, ok := result[i]
-	if !ok {
-		return nil, spot.ErrNotFound
-	}
-	return s, nil
+	return result[i], nil
 }
 
 func (r Repository) BulkGet(is []spot.Identifier) (map[spot.Identifier]spot.Spot, error) {
@@ -43,15 +39,10 @@ func (r Repository) BulkGet(is []spot.Identifier) (map[spot.Identifier]spot.Spot
 		return nil, err
 	}
 
-	if len(rows) == 0 {
-		return result, nil
-	}
-
 	for _, row := range rows {
 		s := unmarshal(row)
 		result[s.Identifier()] = s
 	}
-
 	return result, nil
 }
 

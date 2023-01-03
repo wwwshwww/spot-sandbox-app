@@ -19,12 +19,17 @@ func (u dbscanProfileUsecase) Get(dpi dbscan_profile.Identifier) (
 	dbscan_profile.DbscanProfile,
 	error,
 ) {
-	return nil, nil
+	dp, err := u.dpr.Get(dpi)
+	if err != nil {
+		return nil, err
+	}
+	return dp, nil
 }
 
 func (u dbscanProfileUsecase) Save(
 	dpi dbscan_profile.Identifier,
 	dpp dbscan_profile.DbscanProfilePreferences,
 ) error {
+	// dp, err := u.dpr.Get(dpi)
 	return nil
 }

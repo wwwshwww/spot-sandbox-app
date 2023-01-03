@@ -53,6 +53,11 @@ func TestGet(t *testing.T) {
 			),
 			false,
 		},
+		{
+			dbscan_profile.Identifier(999),
+			nil,
+			false,
+		},
 	}
 
 	for _, tt := range tests {

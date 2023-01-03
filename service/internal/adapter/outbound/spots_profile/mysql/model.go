@@ -7,5 +7,5 @@ type SpotsProfile struct {
 
 type SpotsProfileSpot struct {
 	SpotsProfileID uint `gorm:"primaryKey;autoIncrement:false"`
-	SpotsID        uint `gorm:"primaryKey;autoIncrement:false"`
+	SpotID         uint `gorm:"primaryKey;autoIncrement:false"`
 }

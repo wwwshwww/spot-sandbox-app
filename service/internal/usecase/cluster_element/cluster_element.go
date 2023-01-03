@@ -34,11 +34,28 @@ type clusterElementUsecase struct {
 }
 
 func (u clusterElementUsecase) Calc(
-	dp dbscan_profile.Identifier,
+	dpi dbscan_profile.Identifier,
 	spi spots_profile.Identifier,
 ) (
 	[]cluster_element.ClusterElement,
 	error,
 ) {
-	return nil, nil
+	sp, err := u.spr.Get(spi)
+	if err != nil {
+		return nil, err
+	}
+	spots, err := u.sr.BulkGet(sp.Spots())
+	if err != nil {
+		return nil, err
+	}
+	dp, err := u.dpr.Get(dpi)
+	if err != nil {
+		return nil, err
+	}
+	ces, err := u.cs.DBScan(spots, dp, sp)
+	if err != nil {
+		return nil, err
+	}
+
+	return ces, nil
 }

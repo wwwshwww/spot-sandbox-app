@@ -14,18 +14,24 @@ func New(db *gorm.DB) spots_profile.Repository {
 }
 
 func (r Repository) Get(i spots_profile.Identifier) (spots_profile.SpotsProfile, error) {
-	var row SpotsProfile
+	var rows []SpotsProfile
 
 	if err := r.db.
-		Preload("SpotsProfileSpots").
 		Model(&SpotsProfile{}).
 		Where("id = ?", i).
-		First(&row).
+		Preload("SpotsProfileSpots", func(db *gorm.DB) *gorm.DB {
+			return db.Order("spot_id ASC")
+		}).
+		Find(&rows).
 		Error; err != nil {
 		return nil, err
 	}
 
-	return unmarshal(row), nil
+	if len(rows) == 0 {
+		return nil, nil
+	} else {
+		return unmarshal(rows[0]), nil
+	}
 }
 
 func (r Repository) Save(sp spots_profile.SpotsProfile) error {

@@ -14,15 +14,20 @@ func New(db *gorm.DB) dbscan_profile.Repository {
 }
 
 func (r Repository) Get(i dbscan_profile.Identifier) (dbscan_profile.DbscanProfile, error) {
-	var row DbscanProfile
+	var rows []DbscanProfile
 	if err := r.db.
-		Model(&row).
+		Model(&DbscanProfile{}).
 		Where("id = ?", i).
-		First(&row).
+		Find(&rows).
 		Error; err != nil {
 		return nil, err
 	}
-	return unmarshal(row), nil
+
+	if len(rows) == 0 {
+		return nil, nil
+	} else {
+		return unmarshal(rows[0]), nil
+	}
 }
 
 func (r Repository) Save(dp dbscan_profile.DbscanProfile) error {

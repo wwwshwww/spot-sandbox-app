@@ -15,16 +15,33 @@ type spotsProfileUsecase struct {
 	spr spots_profile.Repository
 }
 
-func (u spotsProfileUsecase) Get(si spots_profile.Identifier) (
+func (u spotsProfileUsecase) Get(spi spots_profile.Identifier) (
 	spots_profile.SpotsProfile,
 	error,
 ) {
-	return nil, nil
+	sp, err := u.spr.Get(spi)
+	if err != nil {
+		return nil, err
+	}
+	return sp, nil
 }
 
 func (u spotsProfileUsecase) Save(
-	si spots_profile.Identifier,
-	sp spots_profile.SpotsProfilePreferences,
+	spi spots_profile.Identifier,
+	spp spots_profile.SpotsProfilePreferences,
 ) error {
+	sp, err := u.spr.Get(spi)
+	if err != nil {
+		return err
+	}
+	if sp == nil {
+		sp = spots_profile.New(spi)
+	}
+	if err := sp.Overwrite(spp); err != nil {
+		return err
+	}
+	if err := u.spr.Save(sp); err != nil {
+		return err
+	}
 	return nil
 }

@@ -19,12 +19,29 @@ func (u spotUsecase) Get(si spot.Identifier) (
 	spot.Spot,
 	error,
 ) {
-	return nil, nil
+	s, err := u.sr.Get(si)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }
 
 func (u spotUsecase) Save(
 	si spot.Identifier,
 	sp spot.SpotPreferences,
 ) error {
+	s, err := u.sr.Get(si)
+	if err != nil {
+		return err
+	}
+	if s == nil {
+		s = spot.New(si)
+	}
+	if err := s.Overwrite(sp); err != nil {
+		return err
+	}
+	if err := u.sr.Save(s); err != nil {
+		return err
+	}
 	return nil
 }

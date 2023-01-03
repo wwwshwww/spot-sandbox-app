@@ -1,6 +1,7 @@
 package dbscan_profile
 
 import (
+	"errors"
 	"time"
 )
 
@@ -20,7 +21,7 @@ type DbscanProfile interface {
 	MeterThreshold() *int
 	DurationThreshold() *time.Duration
 
-	OverWrite(DbscanProfilePreferences)
+	Overwrite(DbscanProfilePreferences) error
 }
 
 type DbscanProfilePreferences struct {
@@ -44,7 +45,7 @@ func New(i Identifier) DbscanProfile {
 
 func Restore(i Identifier, p DbscanProfilePreferences) DbscanProfile {
 	dp := New(i)
-	dp.OverWrite(p)
+	dp.Overwrite(p)
 	return dp
 }
 
@@ -57,9 +58,9 @@ type dbscanProfile struct {
 	durationThreshold *time.Duration
 }
 
-func (dp *dbscanProfile) OverWrite(p DbscanProfilePreferences) {
+func (dp *dbscanProfile) Overwrite(p DbscanProfilePreferences) error {
 	if p.MaxCount != nil && (*p.MaxCount < 1 || *p.MaxCount < p.MinCount) {
-		return
+		return errors.New("DBScan profile overwrite error")
 	}
 	dp.maxCount = p.MaxCount
 	dp.minCount = p.MinCount
@@ -73,6 +74,7 @@ func (dp *dbscanProfile) OverWrite(p DbscanProfilePreferences) {
 		dp.durationThreshold = p.DurationThreshold
 		dp.meterThreshold = nil
 	}
+	return nil
 }
 
 func (dp *dbscanProfile) Identifier() Identifier            { return dp.identifier }

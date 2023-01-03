@@ -20,6 +20,8 @@ type SpotsProfile interface {
 	UpdateSpots([]spot.Identifier) error
 	AppendSpot(spot.Identifier) error
 	RemoveSpot(spot.Identifier) error
+
+	Overwrite(SpotsProfilePreferences) error
 }
 
 func New(i Identifier) SpotsProfile {
@@ -72,6 +74,13 @@ func (e *spotsProfile) RemoveSpot(s spot.Identifier) error {
 		}
 	}
 	if err := e.UpdateSpots(newSpots); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (e *spotsProfile) Overwrite(spp SpotsProfilePreferences) error {
+	if err := e.UpdateSpots(spp.Spots); err != nil {
 		return err
 	}
 	return nil

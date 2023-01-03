@@ -30,6 +30,18 @@ func (u dbscanProfileUsecase) Save(
 	dpi dbscan_profile.Identifier,
 	dpp dbscan_profile.DbscanProfilePreferences,
 ) error {
-	// dp, err := u.dpr.Get(dpi)
+	dp, err := u.dpr.Get(dpi)
+	if err != nil {
+		return err
+	}
+	if dp == nil {
+		dp = dbscan_profile.New(dpi)
+	}
+	if err := dp.Overwrite(dpp); err != nil {
+		return err
+	}
+	if err := u.dpr.Save(dp); err != nil {
+		return err
+	}
 	return nil
 }

@@ -7,8 +7,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	dbscan_profile_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/dbscan_profile/graph"
@@ -16,7 +14,6 @@ import (
 	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/mysql"
 	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot/mysql"
 	spot_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot_finder/mysql"
-	dbscan_profile_domain "github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot_finder"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/spot"
@@ -46,28 +43,7 @@ func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.
 	if err != nil {
 		return nil, err
 	}
-	// TODO: refactor
-	p := dbscan_profile_domain.DbscanProfilePreferences{
-		DistanceType: dbscan_profile_graph.UnmarshalDistanceType(input.DistanceType),
-		MinCount:     uint(input.MinCount),
-		MaxCount: func(n *int) *uint {
-			if n == nil {
-				return nil
-			} else {
-				nn := uint(*n)
-				return &nn
-			}
-		}(input.MaxCount),
-		MeterThreshold: input.MeterThreshold,
-		DurationThreshold: func(n *int) *time.Duration {
-			if n == nil {
-				return nil
-			} else {
-				d := time.Duration(time.Minute * time.Duration(*n))
-				return &d
-			}
-		}(input.MinutesThreshold),
-	}
+	p := dbscan_profile_graph.UnmarshalPreferences(input)
 	if err := dpuc.Save(i, p); err != nil {
 		return nil, err
 	}
@@ -75,29 +51,8 @@ func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.
 	if err != nil {
 		return nil, err
 	}
-	mdp := &model.DbscanProfile{
-		ID:           strconv.Itoa(int(dp.Identifier())),
-		DistanceType: dbscan_profile_graph.MarshalDistanceType(dp.DistanceType()),
-		MinCount:     int(dp.MinCount()),
-		MaxCount: func(n *uint) *int {
-			if n == nil {
-				return nil
-			} else {
-				nn := int(*n)
-				return &nn
-			}
-		}(dp.MaxCount()),
-		MeterThreshold: dp.MeterThreshold(),
-		MinutesThreshold: func(d *time.Duration) *int {
-			if d == nil {
-				return nil
-			} else {
-				m := int(d.Minutes())
-				return &m
-			}
-		}(dp.DurationThreshold()),
-	}
-	return mdp, nil
+	mdp := dbscan_profile_graph.Marshal(dp)
+	return &mdp, nil
 }
 
 // Spots is the resolver for the spots field.

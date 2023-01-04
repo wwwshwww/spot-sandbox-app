@@ -358,30 +358,22 @@ func (c *clusteringService) GetPathMapWithInt(
 
 	pathMap := make(map[spot.Identifier][]spot.Identifier)
 	for _, oriSpot := range spotIDs {
-		paths := make([]spot.Identifier, 0, len(spotIDs))
-
 		distances, err := distFn(latLngMap[oriSpot], toLatLngs)
 		if err != nil {
 			return nil, err
 		}
+
+		paths := make([]spot.Identifier, 0, len(spotIDs))
 		spotToDist := make(map[spot.Identifier]int)
-
-		var pruneIndex int
 		for j, si := range spotIDs {
-			spotToDist[si] = distances[j]
-
-			if si != oriSpot {
+			if si != oriSpot && distances[j] < threshold {
+				spotToDist[si] = distances[j]
 				paths = append(paths, si)
-
-				if distances[j] < threshold {
-					pruneIndex++
-				}
 			}
 		}
 		sort.Slice(paths, func(i, j int) bool {
 			return spotToDist[paths[i]] < spotToDist[paths[j]]
 		})
-		paths = paths[:pruneIndex]
 		pathMap[oriSpot] = paths
 	}
 
@@ -404,30 +396,22 @@ func (c *clusteringService) GetPathMapWithDuration(
 
 	pathMap := make(map[spot.Identifier][]spot.Identifier)
 	for _, oriSpot := range spotIDs {
-		paths := make([]spot.Identifier, 0, len(spotIDs))
-
 		distances, err := distFn(latLngMap[oriSpot], toLatLngs)
 		if err != nil {
 			return nil, err
 		}
+
+		paths := make([]spot.Identifier, 0, len(spotIDs))
 		spotToDist := make(map[spot.Identifier]time.Duration)
-
-		var pruneIndex int
 		for j, si := range spotIDs {
-			spotToDist[si] = distances[j]
-
-			if si != oriSpot {
+			if si != oriSpot && distances[j] < threshold {
+				spotToDist[si] = distances[j]
 				paths = append(paths, si)
-
-				if distances[j] < threshold {
-					pruneIndex++
-				}
 			}
 		}
 		sort.Slice(paths, func(i, j int) bool {
 			return spotToDist[paths[i]] < spotToDist[paths[j]]
 		})
-		paths = paths[:pruneIndex]
 		pathMap[oriSpot] = paths
 	}
 

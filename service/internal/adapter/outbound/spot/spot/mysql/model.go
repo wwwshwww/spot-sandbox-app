@@ -1,7 +1,7 @@
 package spot_mysql
 
 type Spot struct {
-	ID                    uint
+	ID                    uint `gorm:"primaryKey"`
 	PostalCode            string
 	AddressRepresentation string
 	Lat                   float64

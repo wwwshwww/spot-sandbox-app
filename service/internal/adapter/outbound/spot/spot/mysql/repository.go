@@ -114,7 +114,7 @@ func (r Repository) NextIdentifiers(n uint) ([]spot.Identifier, error) {
 	if err := r.db.Save(&rows).Error; err != nil {
 		return nil, err
 	}
-	if err := r.db.Save(rows).Error; err != nil {
+	if err := r.db.Delete(rows).Error; err != nil {
 		return nil, err
 	}
 

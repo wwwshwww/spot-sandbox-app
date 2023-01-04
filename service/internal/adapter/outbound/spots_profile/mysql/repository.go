@@ -74,7 +74,7 @@ func (r Repository) NextIdentifier() (spots_profile.Identifier, error) {
 	if err := r.db.Save(&row).Error; err != nil {
 		return 0, err
 	}
-	if err := r.db.Save(row).Error; err != nil {
+	if err := r.db.Delete(row).Error; err != nil {
 		return 0, err
 	}
 

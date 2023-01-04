@@ -33,6 +33,7 @@ func (r Repository) Get(i dbscan_profile.Identifier) (dbscan_profile.DbscanProfi
 func (r Repository) Save(dp dbscan_profile.DbscanProfile) error {
 	if err := r.db.
 		Model(&DbscanProfile{}).
+		Where("id = ?", dp.Identifier()).
 		Save(marshal(dp)).
 		Error; err != nil {
 		return err
@@ -56,7 +57,7 @@ func (r Repository) NextIdentifier() (dbscan_profile.Identifier, error) {
 	if err := r.db.Save(&row).Error; err != nil {
 		return 0, err
 	}
-	if err := r.db.Save(row).Error; err != nil {
+	if err := r.db.Delete(row).Error; err != nil {
 		return 0, err
 	}
 

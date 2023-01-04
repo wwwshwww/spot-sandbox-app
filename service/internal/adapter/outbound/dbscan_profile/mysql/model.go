@@ -11,7 +11,7 @@ const (
 )
 
 type DbscanProfile struct {
-	ID                uint
+	ID                uint `gorm:"primaryKey;columns:id"`
 	DistanceType      DistanceType
 	MinCount          uint
 	MaxCount          *uint

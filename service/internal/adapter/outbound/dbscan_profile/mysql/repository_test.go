@@ -71,6 +71,31 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestSave(t *testing.T) {
+	db, closeDB, err := rdb.NewMySQLInstance(testDB, &dbscan_profile_mysql.DbscanProfile{})
+	defer func() {
+		_ = closeDB()
+	}()
+	assert.NoError(t, err)
+
+	repo := dbscan_profile_mysql.New(db)
+
+	data := dbscan_profile.Restore(
+		1,
+		dbscan_profile.DbscanProfilePreferences{
+			DistanceType:   dbscan_profile.RouteLength,
+			MinCount:       1,
+			MeterThreshold: func(n int) *int { return &n }(10),
+		},
+	)
+	err = repo.Save(data)
+	assert.NoError(t, err)
+
+	actual, err := repo.Get(data.Identifier())
+	assert.NoError(t, err)
+	assert.Equal(t, data, actual)
+}
+
 func prepareDB(t *testing.T, db *gorm.DB) *gorm.DB {
 
 	defaultSpot := []dbscan_profile_mysql.DbscanProfile{

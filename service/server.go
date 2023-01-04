@@ -10,6 +10,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-sql-driver/mysql"
 	"github.com/wwwwshwww/spot-sandbox/graph"
+	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/cache"
 	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/google_maps"
 	"github.com/wwwwshwww/spot-sandbox/internal/config"
 	gormysql "gorm.io/driver/mysql"
@@ -31,8 +32,10 @@ func main() {
 	}
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		DB:  connectDB(),
-		GMC: connectGMC(),
+		DB:   getMySQL(),
+		GMC:  getGoogleMapsClient(),
+		DuCC: getDurationCacheClient(),
+		DiCC: getDistanceCacheClient(),
 	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
@@ -42,7 +45,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func connectDB() *gorm.DB {
+func getMySQL() *gorm.DB {
 	cfg := mysql.Config{
 		DBName:               dbName,
 		User:                 config.MySQL.User,
@@ -64,10 +67,26 @@ func connectDB() *gorm.DB {
 	return db
 }
 
-func connectGMC() *google_maps.GoogleMapsClient {
+func getGoogleMapsClient() *google_maps.GoogleMapsClient {
 	gmc, err := google_maps.NewGoogleMapsClient(config.GoogleMapsAPIKey)
 	if err != nil {
 		panic("failed to get GoogleMapsClient")
 	}
 	return gmc
+}
+
+func getDurationCacheClient() *cache.DurationCacheClient {
+	c, err := cache.NewDurationCacheClient(config.Redis.Host, config.Redis.Port)
+	if err != nil {
+		panic("failed to get DurationCacheClient")
+	}
+	return c
+}
+
+func getDistanceCacheClient() *cache.DistanceCacheClient {
+	c, err := cache.NewDistanceCacheClient(config.Redis.Host, config.Redis.Port)
+	if err != nil {
+		panic("failed to get DistanceCacheClient")
+	}
+	return c
 }

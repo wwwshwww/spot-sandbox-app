@@ -31,7 +31,7 @@ func TestDBScan(t *testing.T) {
 			dbscan_profile.DbscanProfilePreferences{
 				DistanceType:   dbscan_profile.Hubeny,
 				MinCount:       0,
-				MaxCount:       func(n uint) *uint { return &n }(3),
+				MaxCount:       func(n int) *int { return &n }(3),
 				MeterThreshold: func(n int) *int { return &n }(10000),
 			},
 		),
@@ -40,7 +40,7 @@ func TestDBScan(t *testing.T) {
 			dbscan_profile.DbscanProfilePreferences{
 				DistanceType:   dbscan_profile.Hubeny,
 				MinCount:       2,
-				MaxCount:       func(n uint) *uint { return &n }(2),
+				MaxCount:       func(n int) *int { return &n }(2),
 				MeterThreshold: func(n int) *int { return &n }(10000),
 			},
 		),

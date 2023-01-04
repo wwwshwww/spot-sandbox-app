@@ -8,16 +8,16 @@ import (
 var (
 	defaultThresholdMeter int          = 200
 	defaultDistanceType   DistanceType = RouteLength
-	defaultMinCount       uint         = 1
-	defaultMaxCount       uint         = 20
+	defaultMinCount       int          = 1
+	defaultMaxCount       int          = 20
 )
 
 // DistanceTypeに応じて保持するThresholdが変わる
 type DbscanProfile interface {
 	Identifier() Identifier
 	DistanceType() DistanceType
-	MinCount() uint
-	MaxCount() *uint
+	MinCount() int
+	MaxCount() *int
 	MeterThreshold() *int
 	DurationThreshold() *time.Duration
 
@@ -26,8 +26,8 @@ type DbscanProfile interface {
 
 type DbscanProfilePreferences struct {
 	DistanceType      DistanceType
-	MinCount          uint
-	MaxCount          *uint
+	MinCount          int
+	MaxCount          *int
 	MeterThreshold    *int
 	DurationThreshold *time.Duration
 }
@@ -54,13 +54,16 @@ func Restore(i Identifier, p DbscanProfilePreferences) DbscanProfile {
 type dbscanProfile struct {
 	identifier        Identifier
 	distanceType      DistanceType
-	minCount          uint
-	maxCount          *uint
+	minCount          int
+	maxCount          *int
 	meterThreshold    *int
 	durationThreshold *time.Duration
 }
 
 func (dp *dbscanProfile) Overwrite(p DbscanProfilePreferences) error {
+	if p.MinCount < 0 {
+		return errors.New("DBScan profile overwrite error")
+	}
 	if p.MaxCount != nil && (*p.MaxCount < 1 || *p.MaxCount < p.MinCount) {
 		return errors.New("DBScan profile overwrite error")
 	}
@@ -81,7 +84,7 @@ func (dp *dbscanProfile) Overwrite(p DbscanProfilePreferences) error {
 
 func (dp *dbscanProfile) Identifier() Identifier            { return dp.identifier }
 func (dp *dbscanProfile) DistanceType() DistanceType        { return dp.distanceType }
-func (dp *dbscanProfile) MinCount() uint                    { return dp.minCount }
-func (dp *dbscanProfile) MaxCount() *uint                   { return dp.maxCount }
+func (dp *dbscanProfile) MinCount() int                     { return dp.minCount }
+func (dp *dbscanProfile) MaxCount() *int                    { return dp.maxCount }
 func (dp *dbscanProfile) MeterThreshold() *int              { return dp.meterThreshold }
 func (dp *dbscanProfile) DurationThreshold() *time.Duration { return dp.durationThreshold }

@@ -13,8 +13,8 @@ const (
 type DbscanProfile struct {
 	ID                uint `gorm:"primaryKey"`
 	DistanceType      DistanceType
-	MinCount          uint
-	MaxCount          *uint
+	MinCount          int
+	MaxCount          *int
 	MeterThreshold    *int
 	DurationThreshold *time.Duration
 }

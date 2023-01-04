@@ -10,17 +10,10 @@ import (
 
 func Marshal(dp dbscan_profile.DbscanProfile) model.DbscanProfile {
 	return model.DbscanProfile{
-		ID:           strconv.Itoa(int(dp.Identifier())),
-		DistanceType: MarshalDistanceType(dp.DistanceType()),
-		MinCount:     int(dp.MinCount()),
-		MaxCount: func(n *uint) *int {
-			if n == nil {
-				return nil
-			} else {
-				nn := int(*n)
-				return &nn
-			}
-		}(dp.MaxCount()),
+		ID:             strconv.Itoa(int(dp.Identifier())),
+		DistanceType:   MarshalDistanceType(dp.DistanceType()),
+		MinCount:       int(dp.MinCount()),
+		MaxCount:       dp.MaxCount(),
 		MeterThreshold: dp.MeterThreshold(),
 		MinutesThreshold: func(d *time.Duration) *int {
 			if d == nil {
@@ -48,22 +41,15 @@ func MarshalDistanceType(dt dbscan_profile.DistanceType) model.DistanceType {
 
 func UnmarshalPreferences(m model.NewDbscanProfile) dbscan_profile.DbscanProfilePreferences {
 	return dbscan_profile.DbscanProfilePreferences{
-		DistanceType: UnmarshalDistanceType(m.DistanceType),
-		MinCount:     uint(m.MinCount),
-		MaxCount: func(n *int) *uint {
-			if n == nil {
-				return nil
-			} else {
-				nn := uint(*n)
-				return &nn
-			}
-		}(m.MaxCount),
+		DistanceType:   UnmarshalDistanceType(m.DistanceType),
+		MinCount:       m.MinCount,
+		MaxCount:       m.MaxCount,
 		MeterThreshold: m.MeterThreshold,
 		DurationThreshold: func(n *int) *time.Duration {
 			if n == nil {
 				return nil
 			} else {
-				d := time.Duration(time.Minute * time.Duration(*n))
+				d := time.Minute * time.Duration(*n)
 				return &d
 			}
 		}(m.MinutesThreshold),

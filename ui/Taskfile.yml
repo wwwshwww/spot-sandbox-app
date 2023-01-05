@@ -1,0 +1,23 @@
+version: '3'
+
+vars:
+  CONTAINER_NAME: dev
+  PORT: 3000
+
+tasks:
+  npm: # ex: `task npm -- update`
+    cmds:
+      - docker-compose run --rm {{.CONTAINER_NAME}} npm {{.CLI_ARGS}}
+  up:
+    cmds:
+      - docker-compose run --rm {{.CONTAINER_NAME}} npm install
+      - docker-compose run --rm {{.CONTAINER_NAME}} npm audit fix
+  add-package: # ex: `task add-package -- react`
+    cmds:
+      - docker-compose run --rm {{.CONTAINER_NAME}} npm install --save {{.CLI_ARGS}}
+  build:
+    cmds:
+      - docker-compose run --rm {{.CONTAINER_NAME}} npm run build
+  start:
+    cmds:
+      - docker-compose run -p {{.PORT}}:3000 --rm {{.CONTAINER_NAME}} npm run dev

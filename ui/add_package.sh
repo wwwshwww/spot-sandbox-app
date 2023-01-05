@@ -1,1 +1,0 @@
-docker-compose run --rm dev npm install --save $1

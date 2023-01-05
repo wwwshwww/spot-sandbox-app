@@ -11,13 +11,16 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	dbscan_profile_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/dbscan_profile/graph"
 	spot_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/spot/graph"
+	spots_profile_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/spots_profile/graph"
 	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/mysql"
 	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot/mysql"
 	spot_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot_finder/mysql"
+	spots_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spots_profile/mysql"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot_finder"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/spot"
+	"github.com/wwwwshwww/spot-sandbox/internal/usecase/spots_profile"
 )
 
 // DbscanProfile is the resolver for the dbscanProfile field.
@@ -57,7 +60,22 @@ func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.
 
 // CreateSpotsProfile is the resolver for the createSpotsProfile field.
 func (r *mutationResolver) CreateSpotsProfile(ctx context.Context, input model.NewSpotsProfile) (*model.SpotsProfile, error) {
-	panic(fmt.Errorf("not implemented: CreateSpotsProfile - createSpotsProfile"))
+	spr := spots_profile_mysql.New(r.DB)
+	spuc := spots_profile.New(spr)
+
+	i, err := spr.NextIdentifier()
+	if err != nil {
+		return nil, err
+	}
+	p := spots_profile_graph.UnmarshalPreferences(input)
+	if err := spuc.Save(i, p); err != nil {
+		return nil, err
+	}
+	sp, err := spuc.Get(i)
+	if err != nil {
+		return nil, err
+	}
+	return spots_profile_graph.Marshal(sp), nil
 }
 
 // CreateSpot is the resolver for the createSpot field.
@@ -104,7 +122,19 @@ func (r *queryResolver) Spots(ctx context.Context) ([]*model.Spot, error) {
 
 // Spots is the resolver for the spots field.
 func (r *spotsProfileResolver) Spots(ctx context.Context, obj *model.SpotsProfile) ([]*model.Spot, error) {
-	panic(fmt.Errorf("not implemented: Spots - spots"))
+	sr := spot_mysql.New(r.DB)
+	sf := spot_finder_mysql.New(r.DB)
+	suc := spot.New(sr, sf, r.GMC)
+
+	sMap, err := suc.BulkGet(obj.SpotIDs)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.Spot, len(obj.SpotIDs))
+	for i, v := range obj.SpotIDs {
+		result[i] = spot_graph.Marshal(sMap[v])
+	}
+	return result, nil
 }
 
 // ClusterElement returns ClusterElementResolver implementation.

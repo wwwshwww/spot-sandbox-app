@@ -8,6 +8,7 @@ services:
     container_name: scapp_mysql
     volumes:
       - ./init.sql:/data/application/init.sql
+      - ./seed.sql:/data/application/seed.sql
       - ./my.cnf:/etc/my.cnf
     environment:
       - MYSQL_ROOT_USER=root

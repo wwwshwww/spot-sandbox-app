@@ -29,7 +29,5 @@ CREATE TABLE IF NOT EXISTS `spots_profile`(
 CREATE TABLE IF NOT EXISTS `spots_profile_spot`(
     `spots_profile_id` INT NOT NULL,
     `spot_id` INT NOT NULL,
-    FOREIGN KEY (`spots_profile_id`) REFERENCES `spots_profile` (`id`),
-    FOREIGN KEY (`spot_id`) REFERENCES `spot` (`id`),
     PRIMARY KEY (`spots_profile_id`, `spot_id`)
 );

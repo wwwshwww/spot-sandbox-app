@@ -64,7 +64,7 @@ func (dp *dbscanProfile) Overwrite(p DbscanProfilePreferences) error {
 	if p.MinCount < 0 {
 		return errors.New("DBScan profile overwrite error")
 	}
-	if p.MaxCount != nil && (*p.MaxCount < 1 || *p.MaxCount < p.MinCount) {
+	if p.MaxCount != nil && *p.MaxCount < p.MinCount {
 		return errors.New("DBScan profile overwrite error")
 	}
 	dp.maxCount = p.MaxCount
@@ -73,9 +73,15 @@ func (dp *dbscanProfile) Overwrite(p DbscanProfilePreferences) error {
 	dp.distanceType = p.DistanceType
 	switch p.DistanceType {
 	case Hubeny, RouteLength:
+		if *p.MeterThreshold < 0 {
+			return errors.New("DBScan profile overwrite error")
+		}
 		dp.meterThreshold = p.MeterThreshold
 		dp.durationThreshold = nil
 	case TravelTime:
+		if *p.DurationThreshold < 0 {
+			return errors.New("DBScan profile overwrite error")
+		}
 		dp.durationThreshold = p.DurationThreshold
 		dp.meterThreshold = nil
 	}

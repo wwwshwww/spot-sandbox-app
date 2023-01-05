@@ -8,8 +8,8 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
 )
 
-func Marshal(dp dbscan_profile.DbscanProfile) model.DbscanProfile {
-	return model.DbscanProfile{
+func Marshal(dp dbscan_profile.DbscanProfile) *model.DbscanProfile {
+	return &model.DbscanProfile{
 		ID:             strconv.Itoa(int(dp.Identifier())),
 		DistanceType:   MarshalDistanceType(dp.DistanceType()),
 		MinCount:       int(dp.MinCount()),

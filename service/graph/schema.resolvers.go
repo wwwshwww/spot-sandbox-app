@@ -14,6 +14,7 @@ import (
 	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/mysql"
 	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot/mysql"
 	spot_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot_finder/mysql"
+	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot_finder"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/spot"
@@ -51,8 +52,33 @@ func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.
 	if err != nil {
 		return nil, err
 	}
-	mdp := dbscan_profile_graph.Marshal(dp)
-	return &mdp, nil
+	return dbscan_profile_graph.Marshal(dp), nil
+}
+
+// CreateSpotsProfile is the resolver for the createSpotsProfile field.
+func (r *mutationResolver) CreateSpotsProfile(ctx context.Context, input model.NewSpotsProfile) (*model.SpotsProfile, error) {
+	panic(fmt.Errorf("not implemented: CreateSpotsProfile - createSpotsProfile"))
+}
+
+// CreateSpot is the resolver for the createSpot field.
+func (r *mutationResolver) CreateSpot(ctx context.Context, input model.LatLng) (*model.Spot, error) {
+	sr := spot_mysql.New(r.DB)
+	sf := spot_finder_mysql.New(r.DB)
+	suc := spot.New(sr, sf, r.GMC)
+
+	i, err := sr.NextIdentifier()
+	if err != nil {
+		return nil, err
+	}
+	latlng := common.LatLng{Lat: input.Lat, Lng: input.Lng}
+	if err := suc.Save(i, latlng); err != nil {
+		return nil, err
+	}
+	s, err := suc.Get(i)
+	if err != nil {
+		return nil, err
+	}
+	return spot_graph.Marshal(s), nil
 }
 
 // Spots is the resolver for the spots field.

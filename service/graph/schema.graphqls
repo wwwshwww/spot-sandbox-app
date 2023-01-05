@@ -51,6 +51,17 @@ input NewDbscanProfile {
   minutesThreshold: Int
 }
 
+input NewSpotsProfile {
+  spotIds: [ID!]!
+}
+
+input LatLng {
+  lat: Float!
+  lng: Float!
+}
+
 type Mutation {
   createDbscanProfile(input: NewDbscanProfile!): DbscanProfile!
+  createSpotsProfile(input: NewSpotsProfile!): SpotsProfile!
+  createSpot(input: LatLng!): Spot!
 }

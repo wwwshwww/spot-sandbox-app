@@ -8,12 +8,21 @@ import (
 	"strconv"
 )
 
+type LatLng struct {
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
+}
+
 type NewDbscanProfile struct {
 	DistanceType     DistanceType `json:"distanceType"`
 	MinCount         int          `json:"minCount"`
 	MaxCount         *int         `json:"maxCount"`
 	MeterThreshold   *int         `json:"meterThreshold"`
 	MinutesThreshold *int         `json:"minutesThreshold"`
+}
+
+type NewSpotsProfile struct {
+	SpotIds []string `json:"spotIds"`
 }
 
 type DistanceType string

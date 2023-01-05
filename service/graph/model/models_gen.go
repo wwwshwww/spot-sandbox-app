@@ -8,6 +8,11 @@ import (
 	"strconv"
 )
 
+type DbscanParam struct {
+	DbscanProfileID string `json:"dbscanProfileId"`
+	SpotsProfileID  string `json:"spotsProfileId"`
+}
+
 type LatLng struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`

@@ -39,6 +39,14 @@ func MarshalDistanceType(dt dbscan_profile.DistanceType) model.DistanceType {
 	}
 }
 
+func UnmarshalIdentifier(m string) dbscan_profile.Identifier {
+	i, err := strconv.Atoi(m)
+	if err != nil {
+		panic("unmarshal dbscanProfile identifier")
+	}
+	return dbscan_profile.Identifier(i)
+}
+
 func UnmarshalPreferences(m model.NewDbscanProfile) dbscan_profile.DbscanProfilePreferences {
 	return dbscan_profile.DbscanProfilePreferences{
 		DistanceType:   UnmarshalDistanceType(m.DistanceType),

@@ -72,7 +72,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Spots func(childComplexity int) int
+		Dbscan func(childComplexity int, input model.DbscanParam) int
+		Spots  func(childComplexity int) int
 	}
 
 	Spot struct {
@@ -101,6 +102,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Spots(ctx context.Context) ([]*model.Spot, error)
+	Dbscan(ctx context.Context, input model.DbscanParam) ([]*model.ClusterElement, error)
 }
 type SpotsProfileResolver interface {
 	Spots(ctx context.Context, obj *model.SpotsProfile) ([]*model.Spot, error)
@@ -241,6 +243,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateSpotsProfile(childComplexity, args["input"].(model.NewSpotsProfile)), true
 
+	case "Query.dbscan":
+		if e.complexity.Query.Dbscan == nil {
+			break
+		}
+
+		args, err := ec.field_Query_dbscan_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Dbscan(childComplexity, args["input"].(model.DbscanParam)), true
+
 	case "Query.spots":
 		if e.complexity.Query.Spots == nil {
 			break
@@ -305,6 +319,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputDbscanParam,
 		ec.unmarshalInputLatLng,
 		ec.unmarshalInputNewDbscanProfile,
 		ec.unmarshalInputNewSpotsProfile,
@@ -444,6 +459,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_dbscan_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DbscanParam
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNDbscanParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanParam(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1299,6 +1329,75 @@ func (ec *executionContext) fieldContext_Query_spots(ctx context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Spot", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_dbscan(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dbscan(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Dbscan(rctx, fc.Args["input"].(model.DbscanParam))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ClusterElement)
+	fc.Result = res
+	return ec.marshalNClusterElement2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐClusterElementᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_dbscan(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_ClusterElement_id(ctx, field)
+			case "dbscanProfile":
+				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
+			case "spotsProfile":
+				return ec.fieldContext_ClusterElement_spotsProfile(ctx, field)
+			case "spot":
+				return ec.fieldContext_ClusterElement_spot(ctx, field)
+			case "assignedNumber":
+				return ec.fieldContext_ClusterElement_assignedNumber(ctx, field)
+			case "paths":
+				return ec.fieldContext_ClusterElement_paths(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ClusterElement", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_dbscan_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -3525,6 +3624,42 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDbscanParam(ctx context.Context, obj interface{}) (model.DbscanParam, error) {
+	var it model.DbscanParam
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"dbscanProfileId", "spotsProfileId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "dbscanProfileId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dbscanProfileId"))
+			it.DbscanProfileID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "spotsProfileId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotsProfileId"))
+			it.SpotsProfileID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputLatLng(ctx context.Context, obj interface{}) (model.LatLng, error) {
 	var it model.LatLng
 	asMap := map[string]interface{}{}
@@ -3899,6 +4034,29 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_spots(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "dbscan":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dbscan(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4424,6 +4582,11 @@ func (ec *executionContext) marshalNClusterElement2ᚖgithubᚗcomᚋwwwwshwww�
 		return graphql.Null
 	}
 	return ec._ClusterElement(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDbscanParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanParam(ctx context.Context, v interface{}) (model.DbscanParam, error) {
+	res, err := ec.unmarshalInputDbscanParam(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNDbscanProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfile(ctx context.Context, sel ast.SelectionSet, v model.DbscanProfile) graphql.Marshaler {

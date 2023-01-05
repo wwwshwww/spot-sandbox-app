@@ -16,6 +16,14 @@ func Marshal(sp spots_profile.SpotsProfile) *model.SpotsProfile {
 	}
 }
 
+func UnmarshalIdentifier(m string) spots_profile.Identifier {
+	i, err := strconv.Atoi(m)
+	if err != nil {
+		panic("unmarshal spotsProfile identifier")
+	}
+	return spots_profile.Identifier(i)
+}
+
 func UnmarshalPreferences(m model.NewSpotsProfile) spots_profile.SpotsProfilePreferences {
 	return spots_profile.SpotsProfilePreferences{
 		Spots: common.Map(UnmarshalSpotIdentifier, m.SpotIds),

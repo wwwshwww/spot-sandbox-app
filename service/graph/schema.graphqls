@@ -41,6 +41,12 @@ type ClusterElement {
 
 type Query {
   spots: [Spot!]!
+  dbscan(input: DbscanParam!): [ClusterElement!]!
+}
+
+input DbscanParam {
+  dbscanProfileId: ID!
+  spotsProfileId: ID!
 }
 
 input NewDbscanProfile {

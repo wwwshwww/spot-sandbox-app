@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	cluster_element_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/cluster_element/graph"
@@ -144,40 +143,96 @@ func (r *queryResolver) Spots(ctx context.Context) ([]*model.Spot, error) {
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*model.Spot, len(sis))
+	ss := make([]*model.Spot, len(sis))
 	for i, v := range sis {
-		result[i] = spot_graph.Marshal(sMap[v])
+		ss[i] = spot_graph.Marshal(sMap[v])
 	}
-	return result, nil
+	return ss, nil
 }
 
 // DbscanProfiles is the resolver for the dbscanProfiles field.
 func (r *queryResolver) DbscanProfiles(ctx context.Context) ([]*model.DbscanProfile, error) {
-	panic(fmt.Errorf("not implemented: DbscanProfiles - dbscanProfiles"))
+	dpr := dbscan_profile_mysql.New(r.DB)
+	dpf := dbscan_profile_finder_mysql.New(r.DB)
+	dpuc := dbscan_profile.New(dpr, dpf)
+
+	dpis, err := dpuc.ListAllDbscanProfiles()
+	if err != nil {
+		return nil, err
+	}
+	dpMap, err := dpr.BulkGet(dpis)
+	if err != nil {
+		return nil, err
+	}
+	dps := make([]*model.DbscanProfile, len(dpis))
+	for i, v := range dpis {
+		dps[i] = dbscan_profile_graph.Marshal(dpMap[v])
+	}
+	return dps, nil
 }
 
 // SpotsProfiles is the resolver for the spotsProfiles field.
 func (r *queryResolver) SpotsProfiles(ctx context.Context) ([]*model.SpotsProfile, error) {
-	panic(fmt.Errorf("not implemented: SpotsProfiles - spotsProfiles"))
+	spr := spots_profile_mysql.New(r.DB)
+	spf := spots_profile_finder_mysql.New(r.DB)
+	spuc := spots_profile.New(spr, spf)
+
+	spis, err := spuc.ListAllSpotsProfiles()
+	if err != nil {
+		return nil, err
+	}
+	spMap, err := spr.BulkGet(spis)
+	if err != nil {
+		return nil, err
+	}
+	sps := make([]*model.SpotsProfile, len(spis))
+	for i, v := range spis {
+		sps[i] = spots_profile_graph.Marshal(spMap[v])
+	}
+	return sps, nil
 }
 
 // Spot is the resolver for the spot field.
 func (r *queryResolver) Spot(ctx context.Context, key int) (*model.Spot, error) {
-	panic(fmt.Errorf("not implemented: Spot - spot"))
+	sr := spot_mysql.New(r.DB)
+	sf := spot_finder_mysql.New(r.DB)
+	suc := spot.New(sr, sf, r.GMC)
+
+	s, err := suc.Get(spot_graph.UnmarshalIdentifier(key))
+	if err != nil {
+		return nil, err
+	}
+	return spot_graph.Marshal(s), nil
 }
 
 // SpotsProfile is the resolver for the spotsProfile field.
 func (r *queryResolver) SpotsProfile(ctx context.Context, key int) (*model.SpotsProfile, error) {
-	panic(fmt.Errorf("not implemented: SpotsProfile - spotsProfile"))
+	spr := spots_profile_mysql.New(r.DB)
+	spf := spots_profile_finder_mysql.New(r.DB)
+	spuc := spots_profile.New(spr, spf)
+
+	sp, err := spuc.Get(spots_profile_graph.UnmarshalIdentifier(key))
+	if err != nil {
+		return nil, err
+	}
+	return spots_profile_graph.Marshal(sp), nil
 }
 
 // DbscanProfile is the resolver for the dbscanProfile field.
 func (r *queryResolver) DbscanProfile(ctx context.Context, key int) (*model.DbscanProfile, error) {
-	panic(fmt.Errorf("not implemented: DbscanProfile - dbscanProfile"))
+	dpr := dbscan_profile_mysql.New(r.DB)
+	dpf := dbscan_profile_finder_mysql.New(r.DB)
+	dpuc := dbscan_profile.New(dpr, dpf)
+
+	dp, err := dpuc.Get(dbscan_profile_graph.UnmarshalIdentifier(key))
+	if err != nil {
+		return nil, err
+	}
+	return dbscan_profile_graph.Marshal(dp), nil
 }
 
 // Dbscan is the resolver for the dbscan field.
-func (r *queryResolver) Dbscan(ctx context.Context, input model.DbscanParam) ([]*model.ClusterElement, error) {
+func (r *queryResolver) Dbscan(ctx context.Context, param model.DbscanParam) ([]*model.ClusterElement, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
 	spr := spots_profile_mysql.New(r.DB)
 	sr := spot_mysql.New(r.DB)
@@ -185,8 +240,8 @@ func (r *queryResolver) Dbscan(ctx context.Context, input model.DbscanParam) ([]
 	ceuc := cluster_element.New(sr, dpr, spr, cs)
 
 	ces, err := ceuc.Calc(
-		dbscan_profile_graph.UnmarshalIdentifier(input.DbscanProfileKey),
-		spots_profile_graph.UnmarshalIdentifier(input.SpotsProfileKey),
+		dbscan_profile_graph.UnmarshalIdentifier(param.DbscanProfileKey),
+		spots_profile_graph.UnmarshalIdentifier(param.SpotsProfileKey),
 	)
 	if err != nil {
 		return nil, err

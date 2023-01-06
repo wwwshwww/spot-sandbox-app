@@ -50,7 +50,7 @@ type Query {
   spotsProfile(key: Int!): SpotsProfile
   dbscanProfile(key: Int!): DbscanProfile
 
-  dbscan(input: DbscanParam!): [ClusterElement!]!
+  dbscan(param: DbscanParam!): [ClusterElement!]!
 }
 
 input DbscanParam {

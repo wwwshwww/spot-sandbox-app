@@ -14,3 +14,7 @@ func Marshal(s spot.Spot) *model.Spot {
 		Lng:         s.Address().Lng(),
 	}
 }
+
+func UnmarshalIdentifier(m int) spot.Identifier {
+	return spot.Identifier(m)
+}

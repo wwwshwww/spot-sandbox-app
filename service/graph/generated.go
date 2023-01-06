@@ -72,7 +72,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Dbscan         func(childComplexity int, input model.DbscanParam) int
+		Dbscan         func(childComplexity int, param model.DbscanParam) int
 		DbscanProfile  func(childComplexity int, key int) int
 		DbscanProfiles func(childComplexity int) int
 		Spot           func(childComplexity int, key int) int
@@ -112,7 +112,7 @@ type QueryResolver interface {
 	Spot(ctx context.Context, key int) (*model.Spot, error)
 	SpotsProfile(ctx context.Context, key int) (*model.SpotsProfile, error)
 	DbscanProfile(ctx context.Context, key int) (*model.DbscanProfile, error)
-	Dbscan(ctx context.Context, input model.DbscanParam) ([]*model.ClusterElement, error)
+	Dbscan(ctx context.Context, param model.DbscanParam) ([]*model.ClusterElement, error)
 }
 type SpotsProfileResolver interface {
 	Spots(ctx context.Context, obj *model.SpotsProfile) ([]*model.Spot, error)
@@ -263,7 +263,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Dbscan(childComplexity, args["input"].(model.DbscanParam)), true
+		return e.complexity.Query.Dbscan(childComplexity, args["param"].(model.DbscanParam)), true
 
 	case "Query.dbscanProfile":
 		if e.complexity.Query.DbscanProfile == nil {
@@ -541,14 +541,14 @@ func (ec *executionContext) field_Query_dbscan_args(ctx context.Context, rawArgs
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.DbscanParam
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["param"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("param"))
 		arg0, err = ec.unmarshalNDbscanParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanParam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["param"] = arg0
 	return args, nil
 }
 
@@ -1748,7 +1748,7 @@ func (ec *executionContext) _Query_dbscan(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Dbscan(rctx, fc.Args["input"].(model.DbscanParam))
+		return ec.resolvers.Query().Dbscan(rctx, fc.Args["param"].(model.DbscanParam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

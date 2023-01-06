@@ -1,7 +1,7 @@
 package dbscan_profile_mysql
 
 import (
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 	"gorm.io/gorm"
 )
 

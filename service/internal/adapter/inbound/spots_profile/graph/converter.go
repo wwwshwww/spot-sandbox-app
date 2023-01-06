@@ -4,7 +4,7 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile"
 )
 
 func Marshal(sp spots_profile.SpotsProfile) *model.SpotsProfile {

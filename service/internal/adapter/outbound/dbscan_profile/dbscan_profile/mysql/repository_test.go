@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/rdb"
-	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/mysql"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/dbscan_profile/mysql"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 )
 
 const testDB = "dbscan_profile_test"

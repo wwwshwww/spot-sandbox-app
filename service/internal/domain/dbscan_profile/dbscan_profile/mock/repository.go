@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	dbscan_profile "github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	dbscan_profile "github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 )
 
 // MockRepository is a mock of Repository interface.

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 )
 
 func Marshal(dp dbscan_profile.DbscanProfile) *model.DbscanProfile {

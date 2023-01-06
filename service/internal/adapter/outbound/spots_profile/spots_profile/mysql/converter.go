@@ -2,7 +2,7 @@ package spots_profile_mysql
 
 import (
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile"
 )
 
 func unmarshal(row SpotsProfile) spots_profile.SpotsProfile {

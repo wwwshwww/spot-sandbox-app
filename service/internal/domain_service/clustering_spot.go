@@ -11,9 +11,9 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/internal/adapter/gateway/google_maps"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile"
 )
 
 var (

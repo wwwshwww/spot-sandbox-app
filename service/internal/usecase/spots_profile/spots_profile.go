@@ -1,18 +1,27 @@
 package spots_profile
 
-import "github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
+import (
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile"
+	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile_finder"
+)
 
 type SpotProfileUsecase interface {
 	Get(spots_profile.Identifier) (spots_profile.SpotsProfile, error)
 	Save(spots_profile.Identifier, spots_profile.SpotsProfilePreferences) error
+
+	ListAllSpotsProfiles() ([]spots_profile.Identifier, error)
 }
 
-func New(spr spots_profile.Repository) SpotProfileUsecase {
-	return spotsProfileUsecase{spr: spr}
+func New(
+	spr spots_profile.Repository,
+	spf spots_profile_finder.Finder,
+) SpotProfileUsecase {
+	return spotsProfileUsecase{spr: spr, spf: spf}
 }
 
 type spotsProfileUsecase struct {
 	spr spots_profile.Repository
+	spf spots_profile_finder.Finder
 }
 
 func (u spotsProfileUsecase) Get(spi spots_profile.Identifier) (
@@ -44,4 +53,15 @@ func (u spotsProfileUsecase) Save(
 		return err
 	}
 	return nil
+}
+
+func (u spotsProfileUsecase) ListAllSpotsProfiles() (
+	[]spots_profile.Identifier,
+	error,
+) {
+	dpis, err := u.spf.Find()
+	if err != nil {
+		return nil, err
+	}
+	return dpis, nil
 }

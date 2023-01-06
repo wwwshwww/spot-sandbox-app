@@ -13,10 +13,12 @@ import (
 	dbscan_profile_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/dbscan_profile/graph"
 	spot_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/spot/graph"
 	spots_profile_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/spots_profile/graph"
-	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/mysql"
+	dbscan_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/dbscan_profile/mysql"
+	dbscan_profile_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/dbscan_profile/dbscan_profile_finder/mysql"
 	spot_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot/mysql"
 	spot_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot_finder/mysql"
-	spots_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spots_profile/mysql"
+	spots_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spots_profile/spots_profile/mysql"
+	spots_profile_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spots_profile/spots_profile_finder/mysql"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot_finder"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain_service"
@@ -29,7 +31,8 @@ import (
 // DbscanProfile is the resolver for the dbscanProfile field.
 func (r *clusterElementResolver) DbscanProfile(ctx context.Context, obj *model.ClusterElement) (*model.DbscanProfile, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
-	dpuc := dbscan_profile.New(dpr)
+	dpf := dbscan_profile_finder_mysql.New(r.DB)
+	dpuc := dbscan_profile.New(dpr, dpf)
 
 	dp, err := dpuc.Get(obj.DbscanProfileID)
 	if err != nil {
@@ -41,7 +44,8 @@ func (r *clusterElementResolver) DbscanProfile(ctx context.Context, obj *model.C
 // SpotsProfile is the resolver for the spotsProfile field.
 func (r *clusterElementResolver) SpotsProfile(ctx context.Context, obj *model.ClusterElement) (*model.SpotsProfile, error) {
 	spr := spots_profile_mysql.New(r.DB)
-	spuc := spots_profile.New(spr)
+	spf := spots_profile_finder_mysql.New(r.DB)
+	spuc := spots_profile.New(spr, spf)
 
 	sp, err := spuc.Get(obj.SpotsProfileID)
 	if err != nil {
@@ -66,7 +70,8 @@ func (r *clusterElementResolver) Spot(ctx context.Context, obj *model.ClusterEle
 // CreateDbscanProfile is the resolver for the createDbscanProfile field.
 func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.NewDbscanProfile) (*model.DbscanProfile, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
-	dpuc := dbscan_profile.New(dpr)
+	dpf := dbscan_profile_finder_mysql.New(r.DB)
+	dpuc := dbscan_profile.New(dpr, dpf)
 
 	i, err := dpr.NextIdentifier()
 	if err != nil {
@@ -86,7 +91,8 @@ func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.
 // CreateSpotsProfile is the resolver for the createSpotsProfile field.
 func (r *mutationResolver) CreateSpotsProfile(ctx context.Context, input model.NewSpotsProfile) (*model.SpotsProfile, error) {
 	spr := spots_profile_mysql.New(r.DB)
-	spuc := spots_profile.New(spr)
+	spf := spots_profile_finder_mysql.New(r.DB)
+	spuc := spots_profile.New(spr, spf)
 
 	i, err := spr.NextIdentifier()
 	if err != nil {

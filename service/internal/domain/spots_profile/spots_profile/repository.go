@@ -4,6 +4,7 @@ package spots_profile
 
 type Repository interface {
 	Get(Identifier) (SpotsProfile, error)
+	BulkGet([]Identifier) (map[Identifier]SpotsProfile, error)
 	Save(SpotsProfile) error
 	Delete(Identifier) error
 	NextIdentifier() (Identifier, error)

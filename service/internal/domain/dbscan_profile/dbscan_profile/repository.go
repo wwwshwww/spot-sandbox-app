@@ -4,6 +4,7 @@ package dbscan_profile
 
 type Repository interface {
 	Get(Identifier) (DbscanProfile, error)
+	BulkGet([]Identifier) (map[Identifier]DbscanProfile, error)
 	Save(DbscanProfile) error
 	Delete(Identifier) error
 	NextIdentifier() (Identifier, error)

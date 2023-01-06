@@ -14,24 +14,37 @@ func New(db *gorm.DB) spots_profile.Repository {
 }
 
 func (r Repository) Get(i spots_profile.Identifier) (spots_profile.SpotsProfile, error) {
-	var rows []SpotsProfile
+	res, err := r.BulkGet([]spots_profile.Identifier{i})
+	if err != nil {
+		return nil, err
+	}
+	return res[i], nil
+}
 
+func (r Repository) BulkGet(is []spots_profile.Identifier) (map[spots_profile.Identifier]spots_profile.SpotsProfile, error) {
+	result := make(map[spots_profile.Identifier]spots_profile.SpotsProfile)
+
+	if len(is) == 0 {
+		return result, nil
+	}
+
+	var rows []SpotsProfile
 	if err := r.db.
 		Model(&SpotsProfile{}).
-		Where("id = ?", i).
+		Where("id in ?", is).
 		Preload("SpotsProfileSpots", func(db *gorm.DB) *gorm.DB {
-			return db.Order("spot_id ASC")
+			return db.Order("spots_profile_spot.spot_id ASC")
 		}).
 		Find(&rows).
 		Error; err != nil {
 		return nil, err
 	}
 
-	if len(rows) == 0 {
-		return nil, nil
-	} else {
-		return unmarshal(rows[0]), nil
+	for _, row := range rows {
+		sp := unmarshal(row)
+		result[sp.Identifier()] = sp
 	}
+	return result, nil
 }
 
 func (r Repository) Save(sp spots_profile.SpotsProfile) error {

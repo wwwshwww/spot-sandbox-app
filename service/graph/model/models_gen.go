@@ -9,8 +9,8 @@ import (
 )
 
 type DbscanParam struct {
-	DbscanProfileID string `json:"dbscanProfileId"`
-	SpotsProfileID  string `json:"spotsProfileId"`
+	DbscanProfileKey int `json:"dbscanProfileKey"`
+	SpotsProfileKey  int `json:"spotsProfileKey"`
 }
 
 type LatLng struct {
@@ -27,7 +27,7 @@ type NewDbscanProfile struct {
 }
 
 type NewSpotsProfile struct {
-	SpotIds []string `json:"spotIds"`
+	SpotKeys []int `json:"spotKeys"`
 }
 
 type DistanceType string

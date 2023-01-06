@@ -2,6 +2,8 @@
 #
 # https://gqlgen.com/getting-started/
 
+# TODO: To be the following specification: https://relay.dev/docs/guides/graphql-server-specification/
+
 enum DistanceType {
   HUBENY
   ROUTE_LENGTH
@@ -9,7 +11,7 @@ enum DistanceType {
 }
 
 type DbscanProfile {
-  id: ID!
+  key: Int!
   distanceType: DistanceType!
   minCount: Int!
   maxCount: Int
@@ -18,12 +20,12 @@ type DbscanProfile {
 }
 
 type SpotsProfile {
-  id: ID!
+  key: Int!
   spots: [Spot!]!
 }
 
 type Spot {
-  id: ID!
+  key: Int!
   postalCode: String!
   addressRepr: String!
   lat: Float!
@@ -31,7 +33,7 @@ type Spot {
 }
 
 type ClusterElement {
-  id: ID!
+  key: Int!
 	dbscanProfile: DbscanProfile!
 	spotsProfile:  SpotsProfile!
 	spot: Spot!
@@ -41,12 +43,19 @@ type ClusterElement {
 
 type Query {
   spots: [Spot!]!
+  dbscanProfiles: [DbscanProfile!]!
+  spotsProfiles: [SpotsProfile!]!
+
+  spot(key: Int!): Spot
+  spotsProfile(key: Int!): SpotsProfile
+  dbscanProfile(key: Int!): DbscanProfile
+
   dbscan(input: DbscanParam!): [ClusterElement!]!
 }
 
 input DbscanParam {
-  dbscanProfileId: ID!
-  spotsProfileId: ID!
+  dbscanProfileKey: Int!
+  spotsProfileKey: Int!
 }
 
 input NewDbscanProfile {
@@ -58,7 +67,7 @@ input NewDbscanProfile {
 }
 
 input NewSpotsProfile {
-  spotIds: [ID!]!
+  spotKeys: [Int!]!
 }
 
 input LatLng {

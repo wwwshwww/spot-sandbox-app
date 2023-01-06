@@ -1,8 +1,6 @@
 package cluster_element_graph
 
 import (
-	"strconv"
-
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
 )
@@ -12,7 +10,7 @@ func BatchMarshal(ces []cluster_element.ClusterElement) []*model.ClusterElement 
 	result := make([]*model.ClusterElement, len(ces))
 	for i, ce := range ces {
 		m := &model.ClusterElement{
-			ID:              strconv.Itoa(int(ce.Identifier())),
+			Key:             int(ce.Identifier()),
 			DbscanProfileID: ce.DbscanProfileIdentifier(),
 			SpotsProfileID:  ce.SpotProfileIdentifier(),
 			SpotID:          ce.SpotIdentifier(),

@@ -50,7 +50,7 @@ type ComplexityRoot struct {
 	ClusterElement struct {
 		AssignedNumber func(childComplexity int) int
 		DbscanProfile  func(childComplexity int) int
-		ID             func(childComplexity int) int
+		Key            func(childComplexity int) int
 		Paths          func(childComplexity int) int
 		Spot           func(childComplexity int) int
 		SpotsProfile   func(childComplexity int) int
@@ -58,7 +58,7 @@ type ComplexityRoot struct {
 
 	DbscanProfile struct {
 		DistanceType     func(childComplexity int) int
-		ID               func(childComplexity int) int
+		Key              func(childComplexity int) int
 		MaxCount         func(childComplexity int) int
 		MeterThreshold   func(childComplexity int) int
 		MinCount         func(childComplexity int) int
@@ -72,20 +72,25 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Dbscan func(childComplexity int, input model.DbscanParam) int
-		Spots  func(childComplexity int) int
+		Dbscan         func(childComplexity int, input model.DbscanParam) int
+		DbscanProfile  func(childComplexity int, key int) int
+		DbscanProfiles func(childComplexity int) int
+		Spot           func(childComplexity int, key int) int
+		Spots          func(childComplexity int) int
+		SpotsProfile   func(childComplexity int, key int) int
+		SpotsProfiles  func(childComplexity int) int
 	}
 
 	Spot struct {
 		AddressRepr func(childComplexity int) int
-		ID          func(childComplexity int) int
+		Key         func(childComplexity int) int
 		Lat         func(childComplexity int) int
 		Lng         func(childComplexity int) int
 		PostalCode  func(childComplexity int) int
 	}
 
 	SpotsProfile struct {
-		ID    func(childComplexity int) int
+		Key   func(childComplexity int) int
 		Spots func(childComplexity int) int
 	}
 }
@@ -102,6 +107,11 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Spots(ctx context.Context) ([]*model.Spot, error)
+	DbscanProfiles(ctx context.Context) ([]*model.DbscanProfile, error)
+	SpotsProfiles(ctx context.Context) ([]*model.SpotsProfile, error)
+	Spot(ctx context.Context, key int) (*model.Spot, error)
+	SpotsProfile(ctx context.Context, key int) (*model.SpotsProfile, error)
+	DbscanProfile(ctx context.Context, key int) (*model.DbscanProfile, error)
 	Dbscan(ctx context.Context, input model.DbscanParam) ([]*model.ClusterElement, error)
 }
 type SpotsProfileResolver interface {
@@ -137,12 +147,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClusterElement.DbscanProfile(childComplexity), true
 
-	case "ClusterElement.id":
-		if e.complexity.ClusterElement.ID == nil {
+	case "ClusterElement.key":
+		if e.complexity.ClusterElement.Key == nil {
 			break
 		}
 
-		return e.complexity.ClusterElement.ID(childComplexity), true
+		return e.complexity.ClusterElement.Key(childComplexity), true
 
 	case "ClusterElement.paths":
 		if e.complexity.ClusterElement.Paths == nil {
@@ -172,12 +182,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DbscanProfile.DistanceType(childComplexity), true
 
-	case "DbscanProfile.id":
-		if e.complexity.DbscanProfile.ID == nil {
+	case "DbscanProfile.key":
+		if e.complexity.DbscanProfile.Key == nil {
 			break
 		}
 
-		return e.complexity.DbscanProfile.ID(childComplexity), true
+		return e.complexity.DbscanProfile.Key(childComplexity), true
 
 	case "DbscanProfile.maxCount":
 		if e.complexity.DbscanProfile.MaxCount == nil {
@@ -255,12 +265,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Dbscan(childComplexity, args["input"].(model.DbscanParam)), true
 
+	case "Query.dbscanProfile":
+		if e.complexity.Query.DbscanProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Query_dbscanProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.DbscanProfile(childComplexity, args["key"].(int)), true
+
+	case "Query.dbscanProfiles":
+		if e.complexity.Query.DbscanProfiles == nil {
+			break
+		}
+
+		return e.complexity.Query.DbscanProfiles(childComplexity), true
+
+	case "Query.spot":
+		if e.complexity.Query.Spot == nil {
+			break
+		}
+
+		args, err := ec.field_Query_spot_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Spot(childComplexity, args["key"].(int)), true
+
 	case "Query.spots":
 		if e.complexity.Query.Spots == nil {
 			break
 		}
 
 		return e.complexity.Query.Spots(childComplexity), true
+
+	case "Query.spotsProfile":
+		if e.complexity.Query.SpotsProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Query_spotsProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SpotsProfile(childComplexity, args["key"].(int)), true
+
+	case "Query.spotsProfiles":
+		if e.complexity.Query.SpotsProfiles == nil {
+			break
+		}
+
+		return e.complexity.Query.SpotsProfiles(childComplexity), true
 
 	case "Spot.addressRepr":
 		if e.complexity.Spot.AddressRepr == nil {
@@ -269,12 +329,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Spot.AddressRepr(childComplexity), true
 
-	case "Spot.id":
-		if e.complexity.Spot.ID == nil {
+	case "Spot.key":
+		if e.complexity.Spot.Key == nil {
 			break
 		}
 
-		return e.complexity.Spot.ID(childComplexity), true
+		return e.complexity.Spot.Key(childComplexity), true
 
 	case "Spot.lat":
 		if e.complexity.Spot.Lat == nil {
@@ -297,12 +357,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Spot.PostalCode(childComplexity), true
 
-	case "SpotsProfile.id":
-		if e.complexity.SpotsProfile.ID == nil {
+	case "SpotsProfile.key":
+		if e.complexity.SpotsProfile.Key == nil {
 			break
 		}
 
-		return e.complexity.SpotsProfile.ID(childComplexity), true
+		return e.complexity.SpotsProfile.Key(childComplexity), true
 
 	case "SpotsProfile.spots":
 		if e.complexity.SpotsProfile.Spots == nil {
@@ -462,6 +522,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_dbscanProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_dbscan_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -474,6 +549,36 @@ func (ec *executionContext) field_Query_dbscan_args(ctx context.Context, rawArgs
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_spot_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_spotsProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
 	return args, nil
 }
 
@@ -515,8 +620,8 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _ClusterElement_id(ctx context.Context, field graphql.CollectedField, obj *model.ClusterElement) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClusterElement_id(ctx, field)
+func (ec *executionContext) _ClusterElement_key(ctx context.Context, field graphql.CollectedField, obj *model.ClusterElement) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ClusterElement_key(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -529,7 +634,7 @@ func (ec *executionContext) _ClusterElement_id(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Key, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -541,19 +646,19 @@ func (ec *executionContext) _ClusterElement_id(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ClusterElement_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ClusterElement_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ClusterElement",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -598,8 +703,8 @@ func (ec *executionContext) fieldContext_ClusterElement_dbscanProfile(ctx contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_DbscanProfile_id(ctx, field)
+			case "key":
+				return ec.fieldContext_DbscanProfile_key(ctx, field)
 			case "distanceType":
 				return ec.fieldContext_DbscanProfile_distanceType(ctx, field)
 			case "minCount":
@@ -656,8 +761,8 @@ func (ec *executionContext) fieldContext_ClusterElement_spotsProfile(ctx context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_SpotsProfile_id(ctx, field)
+			case "key":
+				return ec.fieldContext_SpotsProfile_key(ctx, field)
 			case "spots":
 				return ec.fieldContext_SpotsProfile_spots(ctx, field)
 			}
@@ -706,8 +811,8 @@ func (ec *executionContext) fieldContext_ClusterElement_spot(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Spot_id(ctx, field)
+			case "key":
+				return ec.fieldContext_Spot_key(ctx, field)
 			case "postalCode":
 				return ec.fieldContext_Spot_postalCode(ctx, field)
 			case "addressRepr":
@@ -806,8 +911,8 @@ func (ec *executionContext) fieldContext_ClusterElement_paths(ctx context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_ClusterElement_id(ctx, field)
+			case "key":
+				return ec.fieldContext_ClusterElement_key(ctx, field)
 			case "dbscanProfile":
 				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
 			case "spotsProfile":
@@ -825,8 +930,8 @@ func (ec *executionContext) fieldContext_ClusterElement_paths(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _DbscanProfile_id(ctx context.Context, field graphql.CollectedField, obj *model.DbscanProfile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DbscanProfile_id(ctx, field)
+func (ec *executionContext) _DbscanProfile_key(ctx context.Context, field graphql.CollectedField, obj *model.DbscanProfile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DbscanProfile_key(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -839,7 +944,7 @@ func (ec *executionContext) _DbscanProfile_id(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Key, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -851,19 +956,19 @@ func (ec *executionContext) _DbscanProfile_id(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_DbscanProfile_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_DbscanProfile_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DbscanProfile",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1119,8 +1224,8 @@ func (ec *executionContext) fieldContext_Mutation_createDbscanProfile(ctx contex
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_DbscanProfile_id(ctx, field)
+			case "key":
+				return ec.fieldContext_DbscanProfile_key(ctx, field)
 			case "distanceType":
 				return ec.fieldContext_DbscanProfile_distanceType(ctx, field)
 			case "minCount":
@@ -1188,8 +1293,8 @@ func (ec *executionContext) fieldContext_Mutation_createSpotsProfile(ctx context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_SpotsProfile_id(ctx, field)
+			case "key":
+				return ec.fieldContext_SpotsProfile_key(ctx, field)
 			case "spots":
 				return ec.fieldContext_SpotsProfile_spots(ctx, field)
 			}
@@ -1249,8 +1354,8 @@ func (ec *executionContext) fieldContext_Mutation_createSpot(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Spot_id(ctx, field)
+			case "key":
+				return ec.fieldContext_Spot_key(ctx, field)
 			case "postalCode":
 				return ec.fieldContext_Spot_postalCode(ctx, field)
 			case "addressRepr":
@@ -1316,8 +1421,8 @@ func (ec *executionContext) fieldContext_Query_spots(ctx context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Spot_id(ctx, field)
+			case "key":
+				return ec.fieldContext_Spot_key(ctx, field)
 			case "postalCode":
 				return ec.fieldContext_Spot_postalCode(ctx, field)
 			case "addressRepr":
@@ -1329,6 +1434,302 @@ func (ec *executionContext) fieldContext_Query_spots(ctx context.Context, field 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Spot", field.Name)
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_dbscanProfiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dbscanProfiles(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DbscanProfiles(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.DbscanProfile)
+	fc.Result = res
+	return ec.marshalNDbscanProfile2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_dbscanProfiles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_DbscanProfile_key(ctx, field)
+			case "distanceType":
+				return ec.fieldContext_DbscanProfile_distanceType(ctx, field)
+			case "minCount":
+				return ec.fieldContext_DbscanProfile_minCount(ctx, field)
+			case "maxCount":
+				return ec.fieldContext_DbscanProfile_maxCount(ctx, field)
+			case "meterThreshold":
+				return ec.fieldContext_DbscanProfile_meterThreshold(ctx, field)
+			case "minutesThreshold":
+				return ec.fieldContext_DbscanProfile_minutesThreshold(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DbscanProfile", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_spotsProfiles(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_spotsProfiles(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SpotsProfiles(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.SpotsProfile)
+	fc.Result = res
+	return ec.marshalNSpotsProfile2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfileᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_spotsProfiles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_SpotsProfile_key(ctx, field)
+			case "spots":
+				return ec.fieldContext_SpotsProfile_spots(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SpotsProfile", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_spot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_spot(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Spot(rctx, fc.Args["key"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Spot)
+	fc.Result = res
+	return ec.marshalOSpot2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpot(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_spot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_Spot_key(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Spot_postalCode(ctx, field)
+			case "addressRepr":
+				return ec.fieldContext_Spot_addressRepr(ctx, field)
+			case "lat":
+				return ec.fieldContext_Spot_lat(ctx, field)
+			case "lng":
+				return ec.fieldContext_Spot_lng(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Spot", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_spot_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_spotsProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_spotsProfile(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SpotsProfile(rctx, fc.Args["key"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.SpotsProfile)
+	fc.Result = res
+	return ec.marshalOSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_spotsProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_SpotsProfile_key(ctx, field)
+			case "spots":
+				return ec.fieldContext_SpotsProfile_spots(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SpotsProfile", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_spotsProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_dbscanProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dbscanProfile(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DbscanProfile(rctx, fc.Args["key"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.DbscanProfile)
+	fc.Result = res
+	return ec.marshalODbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_dbscanProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_DbscanProfile_key(ctx, field)
+			case "distanceType":
+				return ec.fieldContext_DbscanProfile_distanceType(ctx, field)
+			case "minCount":
+				return ec.fieldContext_DbscanProfile_minCount(ctx, field)
+			case "maxCount":
+				return ec.fieldContext_DbscanProfile_maxCount(ctx, field)
+			case "meterThreshold":
+				return ec.fieldContext_DbscanProfile_meterThreshold(ctx, field)
+			case "minutesThreshold":
+				return ec.fieldContext_DbscanProfile_minutesThreshold(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DbscanProfile", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_dbscanProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -1372,8 +1773,8 @@ func (ec *executionContext) fieldContext_Query_dbscan(ctx context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_ClusterElement_id(ctx, field)
+			case "key":
+				return ec.fieldContext_ClusterElement_key(ctx, field)
 			case "dbscanProfile":
 				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
 			case "spotsProfile":
@@ -1531,8 +1932,8 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Spot_id(ctx context.Context, field graphql.CollectedField, obj *model.Spot) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Spot_id(ctx, field)
+func (ec *executionContext) _Spot_key(ctx context.Context, field graphql.CollectedField, obj *model.Spot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Spot_key(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1545,7 +1946,7 @@ func (ec *executionContext) _Spot_id(ctx context.Context, field graphql.Collecte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Key, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1557,19 +1958,19 @@ func (ec *executionContext) _Spot_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Spot_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Spot_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Spot",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1751,8 +2152,8 @@ func (ec *executionContext) fieldContext_Spot_lng(ctx context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _SpotsProfile_id(ctx context.Context, field graphql.CollectedField, obj *model.SpotsProfile) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SpotsProfile_id(ctx, field)
+func (ec *executionContext) _SpotsProfile_key(ctx context.Context, field graphql.CollectedField, obj *model.SpotsProfile) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SpotsProfile_key(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1765,7 +2166,7 @@ func (ec *executionContext) _SpotsProfile_id(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
+		return obj.Key, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1777,19 +2178,19 @@ func (ec *executionContext) _SpotsProfile_id(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SpotsProfile_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SpotsProfile_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "SpotsProfile",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1834,8 +2235,8 @@ func (ec *executionContext) fieldContext_SpotsProfile_spots(ctx context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Spot_id(ctx, field)
+			case "key":
+				return ec.fieldContext_Spot_key(ctx, field)
 			case "postalCode":
 				return ec.fieldContext_Spot_postalCode(ctx, field)
 			case "addressRepr":
@@ -3631,26 +4032,26 @@ func (ec *executionContext) unmarshalInputDbscanParam(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"dbscanProfileId", "spotsProfileId"}
+	fieldsInOrder := [...]string{"dbscanProfileKey", "spotsProfileKey"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "dbscanProfileId":
+		case "dbscanProfileKey":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dbscanProfileId"))
-			it.DbscanProfileID, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dbscanProfileKey"))
+			it.DbscanProfileKey, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "spotsProfileId":
+		case "spotsProfileKey":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotsProfileId"))
-			it.SpotsProfileID, err = ec.unmarshalNID2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotsProfileKey"))
+			it.SpotsProfileKey, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3763,18 +4164,18 @@ func (ec *executionContext) unmarshalInputNewSpotsProfile(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"spotIds"}
+	fieldsInOrder := [...]string{"spotKeys"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "spotIds":
+		case "spotKeys":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotIds"))
-			it.SpotIds, err = ec.unmarshalNID2ᚕstringᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotKeys"))
+			it.SpotKeys, err = ec.unmarshalNInt2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3802,9 +4203,9 @@ func (ec *executionContext) _ClusterElement(ctx context.Context, sel ast.Selecti
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("ClusterElement")
-		case "id":
+		case "key":
 
-			out.Values[i] = ec._ClusterElement_id(ctx, field, obj)
+			out.Values[i] = ec._ClusterElement_key(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -3904,9 +4305,9 @@ func (ec *executionContext) _DbscanProfile(ctx context.Context, sel ast.Selectio
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("DbscanProfile")
-		case "id":
+		case "key":
 
-			out.Values[i] = ec._DbscanProfile_id(ctx, field, obj)
+			out.Values[i] = ec._DbscanProfile_key(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -4047,6 +4448,112 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "dbscanProfiles":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dbscanProfiles(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "spotsProfiles":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_spotsProfiles(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "spot":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_spot(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "spotsProfile":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_spotsProfile(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "dbscanProfile":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_dbscanProfile(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "dbscan":
 			field := field
 
@@ -4103,9 +4610,9 @@ func (ec *executionContext) _Spot(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Spot")
-		case "id":
+		case "key":
 
-			out.Values[i] = ec._Spot_id(ctx, field, obj)
+			out.Values[i] = ec._Spot_key(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -4159,9 +4666,9 @@ func (ec *executionContext) _SpotsProfile(ctx context.Context, sel ast.Selection
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("SpotsProfile")
-		case "id":
+		case "key":
 
-			out.Values[i] = ec._SpotsProfile_id(ctx, field, obj)
+			out.Values[i] = ec._SpotsProfile_key(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -4593,6 +5100,50 @@ func (ec *executionContext) marshalNDbscanProfile2githubᚗcomᚋwwwwshwwwᚋspo
 	return ec._DbscanProfile(ctx, sel, &v)
 }
 
+func (ec *executionContext) marshalNDbscanProfile2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.DbscanProfile) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNDbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNDbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfile(ctx context.Context, sel ast.SelectionSet, v *model.DbscanProfile) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -4628,53 +5179,6 @@ func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.S
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4688,6 +5192,38 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNLatLng2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐLatLng(ctx context.Context, v interface{}) (model.LatLng, error) {
@@ -4765,6 +5301,50 @@ func (ec *executionContext) marshalNSpot2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsa
 
 func (ec *executionContext) marshalNSpotsProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx context.Context, sel ast.SelectionSet, v model.SpotsProfile) graphql.Marshaler {
 	return ec._SpotsProfile(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNSpotsProfile2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfileᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SpotsProfile) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx context.Context, sel ast.SelectionSet, v *model.SpotsProfile) graphql.Marshaler {
@@ -5071,6 +5651,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalODbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfile(ctx context.Context, sel ast.SelectionSet, v *model.DbscanProfile) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DbscanProfile(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -5085,6 +5672,20 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOSpot2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpot(ctx context.Context, sel ast.SelectionSet, v *model.Spot) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Spot(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx context.Context, sel ast.SelectionSet, v *model.SpotsProfile) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SpotsProfile(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

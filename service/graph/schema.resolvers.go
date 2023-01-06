@@ -6,7 +6,7 @@ package graph
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	cluster_element_graph "github.com/wwwwshwww/spot-sandbox/internal/adapter/inbound/cluster_element/graph"
@@ -18,9 +18,7 @@ import (
 	spot_finder_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spot/spot_finder/mysql"
 	spots_profile_mysql "github.com/wwwwshwww/spot-sandbox/internal/adapter/outbound/spots_profile/mysql"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
-	dbscan_profile_domain "github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot_finder"
-	spots_profile_domain "github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain_service"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/cluster_element"
 	"github.com/wwwwshwww/spot-sandbox/internal/usecase/dbscan_profile"
@@ -147,6 +145,31 @@ func (r *queryResolver) Spots(ctx context.Context) ([]*model.Spot, error) {
 	return result, nil
 }
 
+// DbscanProfiles is the resolver for the dbscanProfiles field.
+func (r *queryResolver) DbscanProfiles(ctx context.Context) ([]*model.DbscanProfile, error) {
+	panic(fmt.Errorf("not implemented: DbscanProfiles - dbscanProfiles"))
+}
+
+// SpotsProfiles is the resolver for the spotsProfiles field.
+func (r *queryResolver) SpotsProfiles(ctx context.Context) ([]*model.SpotsProfile, error) {
+	panic(fmt.Errorf("not implemented: SpotsProfiles - spotsProfiles"))
+}
+
+// Spot is the resolver for the spot field.
+func (r *queryResolver) Spot(ctx context.Context, key int) (*model.Spot, error) {
+	panic(fmt.Errorf("not implemented: Spot - spot"))
+}
+
+// SpotsProfile is the resolver for the spotsProfile field.
+func (r *queryResolver) SpotsProfile(ctx context.Context, key int) (*model.SpotsProfile, error) {
+	panic(fmt.Errorf("not implemented: SpotsProfile - spotsProfile"))
+}
+
+// DbscanProfile is the resolver for the dbscanProfile field.
+func (r *queryResolver) DbscanProfile(ctx context.Context, key int) (*model.DbscanProfile, error) {
+	panic(fmt.Errorf("not implemented: DbscanProfile - dbscanProfile"))
+}
+
 // Dbscan is the resolver for the dbscan field.
 func (r *queryResolver) Dbscan(ctx context.Context, input model.DbscanParam) ([]*model.ClusterElement, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
@@ -155,18 +178,13 @@ func (r *queryResolver) Dbscan(ctx context.Context, input model.DbscanParam) ([]
 	cs := domain_service.NewClusteringService(ctx, r.GMC, r.DiCC, r.DuCC)
 	ceuc := cluster_element.New(sr, dpr, spr, cs)
 
-	dpi, err := strconv.Atoi(input.DbscanProfileID)
-	if err != nil {
-		return nil, err
-	}
-	spi, err := strconv.Atoi(input.SpotsProfileID)
-	if err != nil {
-		return nil, err
-	}
 	ces, err := ceuc.Calc(
-		dbscan_profile_domain.Identifier(dpi),
-		spots_profile_domain.Identifier(spi),
+		dbscan_profile_graph.UnmarshalIdentifier(input.DbscanProfileKey),
+		spots_profile_graph.UnmarshalIdentifier(input.SpotsProfileKey),
 	)
+	if err != nil {
+		return nil, err
+	}
 	return cluster_element_graph.BatchMarshal(ces), nil
 }
 
@@ -176,12 +194,12 @@ func (r *spotsProfileResolver) Spots(ctx context.Context, obj *model.SpotsProfil
 	sf := spot_finder_mysql.New(r.DB)
 	suc := spot.New(sr, sf, r.GMC)
 
-	sMap, err := suc.BulkGet(obj.SpotIDs)
+	sMap, err := suc.BulkGet(obj.SpotKeys)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*model.Spot, len(obj.SpotIDs))
-	for i, v := range obj.SpotIDs {
+	result := make([]*model.Spot, len(obj.SpotKeys))
+	for i, v := range obj.SpotKeys {
 		result[i] = spot_graph.Marshal(sMap[v])
 	}
 	return result, nil

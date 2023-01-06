@@ -1,8 +1,6 @@
 package spots_profile_graph
 
 import (
-	"strconv"
-
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
@@ -11,29 +9,21 @@ import (
 
 func Marshal(sp spots_profile.SpotsProfile) *model.SpotsProfile {
 	return &model.SpotsProfile{
-		ID:      strconv.Itoa(int(sp.Identifier())),
-		SpotIDs: sp.Spots(),
+		Key:      int(sp.Identifier()),
+		SpotKeys: sp.Spots(),
 	}
 }
 
-func UnmarshalIdentifier(m string) spots_profile.Identifier {
-	i, err := strconv.Atoi(m)
-	if err != nil {
-		panic("unmarshal spotsProfile identifier")
-	}
-	return spots_profile.Identifier(i)
+func UnmarshalIdentifier(m int) spots_profile.Identifier {
+	return spots_profile.Identifier(m)
 }
 
 func UnmarshalPreferences(m model.NewSpotsProfile) spots_profile.SpotsProfilePreferences {
 	return spots_profile.SpotsProfilePreferences{
-		Spots: common.Map(UnmarshalSpotIdentifier, m.SpotIds),
+		Spots: common.Map(UnmarshalSpotIdentifier, m.SpotKeys),
 	}
 }
 
-func UnmarshalSpotIdentifier(m string) spot.Identifier {
-	i, err := strconv.Atoi(m)
-	if err != nil {
-		panic("unmarshal spot identifier")
-	}
-	return spot.Identifier(i)
+func UnmarshalSpotIdentifier(m int) spot.Identifier {
+	return spot.Identifier(m)
 }

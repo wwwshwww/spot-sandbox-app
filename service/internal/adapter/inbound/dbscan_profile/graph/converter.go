@@ -1,7 +1,6 @@
 package dbscan_profile_graph
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/wwwwshwww/spot-sandbox/graph/model"
@@ -10,7 +9,7 @@ import (
 
 func Marshal(dp dbscan_profile.DbscanProfile) *model.DbscanProfile {
 	return &model.DbscanProfile{
-		ID:             strconv.Itoa(int(dp.Identifier())),
+		Key:            int(dp.Identifier()),
 		DistanceType:   MarshalDistanceType(dp.DistanceType()),
 		MinCount:       int(dp.MinCount()),
 		MaxCount:       dp.MaxCount(),
@@ -39,12 +38,8 @@ func MarshalDistanceType(dt dbscan_profile.DistanceType) model.DistanceType {
 	}
 }
 
-func UnmarshalIdentifier(m string) dbscan_profile.Identifier {
-	i, err := strconv.Atoi(m)
-	if err != nil {
-		panic("unmarshal dbscanProfile identifier")
-	}
-	return dbscan_profile.Identifier(i)
+func UnmarshalIdentifier(m int) dbscan_profile.Identifier {
+	return dbscan_profile.Identifier(m)
 }
 
 func UnmarshalPreferences(m model.NewDbscanProfile) dbscan_profile.DbscanProfilePreferences {

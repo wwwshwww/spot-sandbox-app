@@ -1,7 +1,7 @@
 package model
 
 type Spot struct {
-	ID          string  `json:"id"`
+	Key         int     `json:"key"`
 	PostalCode  string  `json:"postalCode"`
 	AddressRepr string  `json:"addressRepr"`
 	Lat         float64 `json:"lat"`

@@ -7,7 +7,7 @@ import (
 )
 
 type ClusterElement struct {
-	ID              string                    `json:"id"`
+	Key             int                       `json:"key"`
 	DbscanProfileID dbscan_profile.Identifier `json:"dbscanProfileId"`
 	SpotsProfileID  spots_profile.Identifier  `json:"spotsProfileId"`
 	SpotID          spot.Identifier           `json:"spotId"`

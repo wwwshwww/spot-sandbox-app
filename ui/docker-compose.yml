@@ -1,11 +1,13 @@
 version: '3'
 services:
   dev:
-    image: node
+    image: node:18.12.1
     volumes:
       - ./:/my
     working_dir: /my/react-app
     command: sh -c "npm install && npm run build && npm run dev"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "3000:3000"
 #     tty: true

@@ -10,6 +10,7 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/internal/common"
 )
 
+// TODO: DBを統合してschemaを"distanceType:lat:lng"のようにすべき
 const (
 	DistanceDB         = 0
 	DistanceKeyFormat  = "%.6f,%.6f:%.6f,%.6f"

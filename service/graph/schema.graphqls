@@ -53,6 +53,7 @@ type Query {
   dbscan(param: DbscanParam!): [ClusterElement!]!
 }
 
+""" TODO: profileのIDを指定するのではなく計算に必要なパラメータを生で扱えるようにしたほうが良さげ """
 input DbscanParam {
   dbscanProfileKey: Int!
   spotsProfileKey: Int!

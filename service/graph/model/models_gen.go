@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+// TODO: profileのIDを指定するのではなく計算に必要なパラメータを生で扱えるようにしたほうが良さげ
 type DbscanParam struct {
 	DbscanProfileKey int `json:"dbscanProfileKey"`
 	SpotsProfileKey  int `json:"spotsProfileKey"`

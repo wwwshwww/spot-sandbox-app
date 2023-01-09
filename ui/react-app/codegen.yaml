@@ -1,0 +1,7 @@
+schema: ../../service/graph/schema.graphqls
+generates:
+  ./src/generates/types.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node

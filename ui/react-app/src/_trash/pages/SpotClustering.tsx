@@ -16,7 +16,7 @@ const SpotClustering: React.FC = () => {
           <MapContainer dummy={0} />
         </Grid>
         <Grid item>
-          <Button>asdf</Button>
+          <Button>asdff</Button>
           {/* <Counter initialValue={1} decreVal={1} increVal={1}/> */}
         </Grid>
       </Grid>

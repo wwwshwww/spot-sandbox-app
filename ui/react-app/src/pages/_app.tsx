@@ -1,12 +1,14 @@
 // import './App.css';
 import React from 'react';
 
-import SpotClustering from './components/pages/SpotClustering';
+import SpotClustering from '../_trash/pages/SpotClustering';
+import Top from './top';
 
 const App: React.FC = () => {
   return (
     <div className="App">
-      <SpotClustering />
+      {/* <SpotClustering /> */}
+      <Top/>
     </div>
   );
 };

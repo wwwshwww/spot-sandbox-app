@@ -21,6 +21,8 @@ interface MapContainerProps {
   dummy: number;
 }
 
+var KEY = "AIzaSyBg1bH_Hw4w0D-ES42SvnZJEx6wntbxtAA"
+
 class MapContainer extends React.Component<
   MapContainerProps,
   MapContainerState
@@ -36,7 +38,7 @@ class MapContainer extends React.Component<
 
   render(): React.ReactNode {
     return (
-      <LoadScript googleMapsApiKey="APIKEY">
+      <LoadScript googleMapsApiKey="AI">
         <GoogleMap
           mapContainerStyle={mapStyles}
           options={mapOptions}

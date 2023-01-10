@@ -80,4 +80,7 @@ type Mutation {
   createDbscanProfile(input: NewDbscanProfile!): DbscanProfile!
   createSpotsProfile(input: NewSpotsProfile!): SpotsProfile!
   createSpot(input: LatLng!): Spot!
+
+  updateDbscanProfile(key: Int!, input: NewDbscanProfile!): DbscanProfile!
+  updateSpotsProfile(key: Int!, input: NewSpotsProfile!): SpotsProfile!
 }

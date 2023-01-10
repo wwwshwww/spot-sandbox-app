@@ -129,6 +129,40 @@ func (r *mutationResolver) CreateSpot(ctx context.Context, input model.LatLng) (
 	return spot_graph.Marshal(s), nil
 }
 
+// UpdateDbscanProfile is the resolver for the updateDbscanProfile field.
+func (r *mutationResolver) UpdateDbscanProfile(ctx context.Context, key int, input model.NewDbscanProfile) (*model.DbscanProfile, error) {
+	dpr := dbscan_profile_mysql.New(r.DB)
+	dpf := dbscan_profile_finder_mysql.New(r.DB)
+	dpuc := dbscan_profile.New(dpr, dpf)
+
+	i := dbscan_profile_graph.UnmarshalIdentifier(key)
+	if err := dpuc.Save(i, dbscan_profile_graph.UnmarshalPreferences(input)); err != nil {
+		return nil, err
+	}
+	dp, err := dpuc.Get(i)
+	if err != nil {
+		return nil, err
+	}
+	return dbscan_profile_graph.Marshal(dp), nil
+}
+
+// UpdateSpotsProfile is the resolver for the updateSpotsProfile field.
+func (r *mutationResolver) UpdateSpotsProfile(ctx context.Context, key int, input model.NewSpotsProfile) (*model.SpotsProfile, error) {
+	spr := spots_profile_mysql.New(r.DB)
+	spf := spots_profile_finder_mysql.New(r.DB)
+	spuc := spots_profile.New(spr, spf)
+
+	i := spots_profile_graph.UnmarshalIdentifier(key)
+	if err := spuc.Save(i, spots_profile_graph.UnmarshalPreferences(input)); err != nil {
+		return nil, err
+	}
+	sp, err := spuc.Get(i)
+	if err != nil {
+		return nil, err
+	}
+	return spots_profile_graph.Marshal(sp), nil
+}
+
 // Spots is the resolver for the spots field.
 func (r *queryResolver) Spots(ctx context.Context) ([]*model.Spot, error) {
 	sr := spot_mysql.New(r.DB)

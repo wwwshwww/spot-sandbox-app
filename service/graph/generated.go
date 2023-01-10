@@ -69,6 +69,8 @@ type ComplexityRoot struct {
 		CreateDbscanProfile func(childComplexity int, input model.NewDbscanProfile) int
 		CreateSpot          func(childComplexity int, input model.LatLng) int
 		CreateSpotsProfile  func(childComplexity int, input model.NewSpotsProfile) int
+		UpdateDbscanProfile func(childComplexity int, key int, input model.NewDbscanProfile) int
+		UpdateSpotsProfile  func(childComplexity int, key int, input model.NewSpotsProfile) int
 	}
 
 	Query struct {
@@ -104,6 +106,8 @@ type MutationResolver interface {
 	CreateDbscanProfile(ctx context.Context, input model.NewDbscanProfile) (*model.DbscanProfile, error)
 	CreateSpotsProfile(ctx context.Context, input model.NewSpotsProfile) (*model.SpotsProfile, error)
 	CreateSpot(ctx context.Context, input model.LatLng) (*model.Spot, error)
+	UpdateDbscanProfile(ctx context.Context, key int, input model.NewDbscanProfile) (*model.DbscanProfile, error)
+	UpdateSpotsProfile(ctx context.Context, key int, input model.NewSpotsProfile) (*model.SpotsProfile, error)
 }
 type QueryResolver interface {
 	Spots(ctx context.Context) ([]*model.Spot, error)
@@ -252,6 +256,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateSpotsProfile(childComplexity, args["input"].(model.NewSpotsProfile)), true
+
+	case "Mutation.updateDbscanProfile":
+		if e.complexity.Mutation.UpdateDbscanProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDbscanProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDbscanProfile(childComplexity, args["key"].(int), args["input"].(model.NewDbscanProfile)), true
+
+	case "Mutation.updateSpotsProfile":
+		if e.complexity.Mutation.UpdateSpotsProfile == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateSpotsProfile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateSpotsProfile(childComplexity, args["key"].(int), args["input"].(model.NewSpotsProfile)), true
 
 	case "Query.dbscan":
 		if e.complexity.Query.Dbscan == nil {
@@ -504,6 +532,54 @@ func (ec *executionContext) field_Mutation_createSpotsProfile_args(ctx context.C
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDbscanProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
+	var arg1 model.NewDbscanProfile
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNNewDbscanProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewDbscanProfile(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateSpotsProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["key"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["key"] = arg0
+	var arg1 model.NewSpotsProfile
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNNewSpotsProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewSpotsProfile(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1376,6 +1452,136 @@ func (ec *executionContext) fieldContext_Mutation_createSpot(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createSpot_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateDbscanProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateDbscanProfile(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateDbscanProfile(rctx, fc.Args["key"].(int), fc.Args["input"].(model.NewDbscanProfile))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.DbscanProfile)
+	fc.Result = res
+	return ec.marshalNDbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateDbscanProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_DbscanProfile_key(ctx, field)
+			case "distanceType":
+				return ec.fieldContext_DbscanProfile_distanceType(ctx, field)
+			case "minCount":
+				return ec.fieldContext_DbscanProfile_minCount(ctx, field)
+			case "maxCount":
+				return ec.fieldContext_DbscanProfile_maxCount(ctx, field)
+			case "meterThreshold":
+				return ec.fieldContext_DbscanProfile_meterThreshold(ctx, field)
+			case "minutesThreshold":
+				return ec.fieldContext_DbscanProfile_minutesThreshold(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DbscanProfile", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateDbscanProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateSpotsProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateSpotsProfile(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateSpotsProfile(rctx, fc.Args["key"].(int), fc.Args["input"].(model.NewSpotsProfile))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.SpotsProfile)
+	fc.Result = res
+	return ec.marshalNSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateSpotsProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_SpotsProfile_key(ctx, field)
+			case "spots":
+				return ec.fieldContext_SpotsProfile_spots(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SpotsProfile", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateSpotsProfile_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4390,6 +4596,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createSpot(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateDbscanProfile":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateDbscanProfile(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateSpotsProfile":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateSpotsProfile(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

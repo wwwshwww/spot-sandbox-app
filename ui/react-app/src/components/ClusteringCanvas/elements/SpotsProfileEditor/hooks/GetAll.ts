@@ -16,10 +16,10 @@ interface Spots {
   spotsProfiles: Array<SpotsProfile>;
 }
 
-const useFetchList = () => {
+const useGetAll = () => {
   const { loading, error, data } = useQuery<Spots>(QueryGetAllSpotsProfile);
   const spotsProfiles = data?.spotsProfiles;
   return { loading, error, spotsProfiles };
 };
 
-export default useFetchList;
+export default useGetAll;

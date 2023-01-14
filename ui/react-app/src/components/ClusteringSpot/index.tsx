@@ -56,7 +56,7 @@ const getCurrentSpotsProfileState = (): CSPStateAndReducer => {
   return { currentSpotsProfile, dispatch };
 };
 
-export const Sample: React.FC = () => {
+export const ClusteringSpot: React.FC = () => {
   const { loading: spLoading, error: spErr, spotsProfiles } = useGetAll();
   const { currentSpotsProfile, dispatch: cspDisp } =
     getCurrentSpotsProfileState();
@@ -92,4 +92,4 @@ export const Sample: React.FC = () => {
   );
 };
 
-export default Sample;
+export default ClusteringSpot;

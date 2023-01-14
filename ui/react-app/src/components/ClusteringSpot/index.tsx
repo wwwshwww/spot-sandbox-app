@@ -5,7 +5,8 @@ import { Spot, SpotsProfile } from "../../generates/types";
 import DbscanProfileEditor from "./elements/DbscanProfileEditor";
 import SpotsCanvas from "./elements/SpotsCanvas";
 import SpotsProfileEditor from "./elements/SpotsProfileEditor";
-import useGetAll from "./elements/SpotsProfileEditor/hooks/GetAll";
+import { useGetAll as GetSpotsProfiles } from "./elements/SpotsProfileEditor/hooks/GetAll";
+import { useGetAll as GetSpots } from "./elements/SpotsCanvas/hooks/GetAll";
 
 export interface CSPState {
   spotsProfile: SpotsProfile | undefined;
@@ -57,9 +58,15 @@ const getCurrentSpotsProfileState = (): CSPStateAndReducer => {
 };
 
 export const ClusteringSpot: React.FC = () => {
-  const { loading: spLoading, error: spErr, spotsProfiles } = useGetAll();
+  const {
+    loading: spLoading,
+    error: spErr,
+    spotsProfiles,
+  } = GetSpotsProfiles();
   const { currentSpotsProfile, dispatch: cspDisp } =
     getCurrentSpotsProfileState();
+
+  const { loading: sLoading, error: sErr, spots } = GetSpots();
 
   return (
     <Box>
@@ -71,22 +78,24 @@ export const ClusteringSpot: React.FC = () => {
         justifyContent="center"
         alignItems="flex-start"
       >
-        <Grid>
-          {spLoading ? (
-            <p>loading...</p>
-          ) : (
-            <SpotsProfileEditor
-              sps={spotsProfiles!}
-              current={{ currentSpotsProfile, dispatch: cspDisp }}
-            />
-          )}
-        </Grid>
-        <Grid>
-          <SpotsCanvas />
-        </Grid>
-        <Grid>
-          <DbscanProfileEditor />
-        </Grid>
+        {spLoading || sLoading ? (
+          <p>loading...</p>
+        ) : (
+          <>
+            <Grid>
+              <SpotsProfileEditor
+                initSpotsProfiles={spotsProfiles!}
+                initCurrent={{ currentSpotsProfile, dispatch: cspDisp }}
+              />
+            </Grid>
+            <Grid>
+              <SpotsCanvas initSpots={spots} />
+            </Grid>
+            <Grid>
+              <DbscanProfileEditor />
+            </Grid>
+          </>
+        )}
       </Grid>
     </Box>
   );

@@ -23,13 +23,13 @@ const Card = styled(Box)(({ theme }) => ({
 }));
 
 interface EditorProps {
-  sps: Array<SpotsProfile>;
-  current: CSPStateAndReducer;
+  initSpotsProfiles: Array<SpotsProfile>;
+  initCurrent: CSPStateAndReducer;
 }
 
 const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
-  const [spotsProfiles, setSpotsProfiles] = useState(props.sps);
-  const { currentSpotsProfile: initCsp, dispatch } = props.current;
+  const [spotsProfiles, setSpotsProfiles] = useState(props.initSpotsProfiles);
+  const { currentSpotsProfile: initCsp, dispatch } = props.initCurrent;
   const [csp, setCsp] = useState<CSPState>(initCsp);
 
   const li = spotsProfiles.map((v: SpotsProfile) => (

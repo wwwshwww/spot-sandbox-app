@@ -1,5 +1,6 @@
 import { Button, Paper, styled } from "@mui/material";
 import Grid from '@mui/material/Unstable_Grid2'; 
+import { Spot } from "../../../../generates/types";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -9,15 +10,26 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-const SpotsCanvas: React.FC = () => {
+
+interface SpotsCanvasProps {
+  initSpots: Array<Spot> | undefined;
+}
+
+const SpotsCanvas: React.FC<SpotsCanvasProps> = (props) => {
   return (
     <Grid
-      container
       spacing={2}
       justifyContent="center"
     >
       <Grid>
         <Item>GoogleMapGoogleMap</Item>
+      </Grid>
+      <Grid>
+        {
+          props.initSpots?.map((v: Spot, i: number) => (
+            <Item key={i}>{v.addressRepr}</Item>
+          ))
+        }
       </Grid>
     </Grid>
   );

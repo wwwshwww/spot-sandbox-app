@@ -19,12 +19,12 @@ export type ClusterElement = {
   key: Scalars['Int'];
   paths: Array<ClusterElement>;
   spot: Spot;
-  spotsProfile: SpotsProfile;
 };
 
+/**  TODO: profileのIDを指定するかたちではなく各パラメータを生で扱えるようにすべき  */
 export type DbscanParam = {
   dbscanProfileKey: Scalars['Int'];
-  spotsProfileKey: Scalars['Int'];
+  spotKeys: Array<Scalars['Int']>;
 };
 
 export type DbscanProfile = {
@@ -35,6 +35,14 @@ export type DbscanProfile = {
   meterThreshold?: Maybe<Scalars['Int']>;
   minCount: Scalars['Int'];
   minutesThreshold?: Maybe<Scalars['Int']>;
+};
+
+export type DbscanProfileParam = {
+  distanceType: DistanceType;
+  maxCount?: InputMaybe<Scalars['Int']>;
+  meterThreshold?: InputMaybe<Scalars['Int']>;
+  minCount: Scalars['Int'];
+  minutesThreshold?: InputMaybe<Scalars['Int']>;
 };
 
 export enum DistanceType {
@@ -53,11 +61,13 @@ export type Mutation = {
   createDbscanProfile: DbscanProfile;
   createSpot: Spot;
   createSpotsProfile: SpotsProfile;
+  updateDbscanProfile: DbscanProfile;
+  updateSpotsProfile: SpotsProfile;
 };
 
 
 export type MutationCreateDbscanProfileArgs = {
-  input: NewDbscanProfile;
+  input: DbscanProfileParam;
 };
 
 
@@ -67,19 +77,19 @@ export type MutationCreateSpotArgs = {
 
 
 export type MutationCreateSpotsProfileArgs = {
-  input: NewSpotsProfile;
+  input: SpotsProfileParam;
 };
 
-export type NewDbscanProfile = {
-  distanceType: DistanceType;
-  maxCount?: InputMaybe<Scalars['Int']>;
-  meterThreshold?: InputMaybe<Scalars['Int']>;
-  minCount: Scalars['Int'];
-  minutesThreshold?: InputMaybe<Scalars['Int']>;
+
+export type MutationUpdateDbscanProfileArgs = {
+  input: DbscanProfileParam;
+  key: Scalars['Int'];
 };
 
-export type NewSpotsProfile = {
-  spotKeys: Array<Scalars['Int']>;
+
+export type MutationUpdateSpotsProfileArgs = {
+  input: SpotsProfileParam;
+  key: Scalars['Int'];
 };
 
 export type Query = {
@@ -126,4 +136,8 @@ export type SpotsProfile = {
   __typename?: 'SpotsProfile';
   key: Scalars['Int'];
   spots: Array<Spot>;
+};
+
+export type SpotsProfileParam = {
+  spotKeys: Array<Scalars['Int']>;
 };

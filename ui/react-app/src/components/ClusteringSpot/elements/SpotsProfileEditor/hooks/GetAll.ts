@@ -12,12 +12,12 @@ const QueryGetAllSpotsProfile = gql`
   }
 `;
 
-interface Spots {
+interface SpotsProfiles {
   spotsProfiles: Array<SpotsProfile>;
 }
 
-const useGetAll = () => {
-  const { loading, error, data } = useQuery<Spots>(QueryGetAllSpotsProfile);
+export const useGetAll = () => {
+  const { loading, error, data } = useQuery<SpotsProfiles>(QueryGetAllSpotsProfile);
   const spotsProfiles = data?.spotsProfiles;
   return { loading, error, spotsProfiles };
 };

@@ -40,19 +40,6 @@ func (r *clusterElementResolver) DbscanProfile(ctx context.Context, obj *model.C
 	return dbscan_profile_graph.Marshal(dp), nil
 }
 
-// SpotsProfile is the resolver for the spotsProfile field.
-func (r *clusterElementResolver) SpotsProfile(ctx context.Context, obj *model.ClusterElement) (*model.SpotsProfile, error) {
-	spr := spots_profile_mysql.New(r.DB)
-	spf := spots_profile_finder_mysql.New(r.DB)
-	spuc := spots_profile.New(spr, spf)
-
-	sp, err := spuc.Get(obj.SpotsProfileID)
-	if err != nil {
-		return nil, err
-	}
-	return spots_profile_graph.Marshal(sp), nil
-}
-
 // Spot is the resolver for the spot field.
 func (r *clusterElementResolver) Spot(ctx context.Context, obj *model.ClusterElement) (*model.Spot, error) {
 	sr := spot_mysql.New(r.DB)
@@ -67,7 +54,7 @@ func (r *clusterElementResolver) Spot(ctx context.Context, obj *model.ClusterEle
 }
 
 // CreateDbscanProfile is the resolver for the createDbscanProfile field.
-func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.NewDbscanProfile) (*model.DbscanProfile, error) {
+func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.DbscanProfileParam) (*model.DbscanProfile, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
 	dpf := dbscan_profile_finder_mysql.New(r.DB)
 	dpuc := dbscan_profile.New(dpr, dpf)
@@ -88,7 +75,7 @@ func (r *mutationResolver) CreateDbscanProfile(ctx context.Context, input model.
 }
 
 // CreateSpotsProfile is the resolver for the createSpotsProfile field.
-func (r *mutationResolver) CreateSpotsProfile(ctx context.Context, input model.NewSpotsProfile) (*model.SpotsProfile, error) {
+func (r *mutationResolver) CreateSpotsProfile(ctx context.Context, input model.SpotsProfileParam) (*model.SpotsProfile, error) {
 	spr := spots_profile_mysql.New(r.DB)
 	spf := spots_profile_finder_mysql.New(r.DB)
 	spuc := spots_profile.New(spr, spf)
@@ -130,7 +117,7 @@ func (r *mutationResolver) CreateSpot(ctx context.Context, input model.LatLng) (
 }
 
 // UpdateDbscanProfile is the resolver for the updateDbscanProfile field.
-func (r *mutationResolver) UpdateDbscanProfile(ctx context.Context, key int, input model.NewDbscanProfile) (*model.DbscanProfile, error) {
+func (r *mutationResolver) UpdateDbscanProfile(ctx context.Context, key int, input model.DbscanProfileParam) (*model.DbscanProfile, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
 	dpf := dbscan_profile_finder_mysql.New(r.DB)
 	dpuc := dbscan_profile.New(dpr, dpf)
@@ -147,7 +134,7 @@ func (r *mutationResolver) UpdateDbscanProfile(ctx context.Context, key int, inp
 }
 
 // UpdateSpotsProfile is the resolver for the updateSpotsProfile field.
-func (r *mutationResolver) UpdateSpotsProfile(ctx context.Context, key int, input model.NewSpotsProfile) (*model.SpotsProfile, error) {
+func (r *mutationResolver) UpdateSpotsProfile(ctx context.Context, key int, input model.SpotsProfileParam) (*model.SpotsProfile, error) {
 	spr := spots_profile_mysql.New(r.DB)
 	spf := spots_profile_finder_mysql.New(r.DB)
 	spuc := spots_profile.New(spr, spf)
@@ -275,7 +262,7 @@ func (r *queryResolver) Dbscan(ctx context.Context, param model.DbscanParam) ([]
 
 	ces, err := ceuc.Calc(
 		dbscan_profile_graph.UnmarshalIdentifier(param.DbscanProfileKey),
-		spots_profile_graph.UnmarshalIdentifier(param.SpotsProfileKey),
+		common.Map(spot_graph.UnmarshalIdentifier, param.SpotKeys),
 	)
 	if err != nil {
 		return nil, err

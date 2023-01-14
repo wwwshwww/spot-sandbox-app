@@ -118,11 +118,13 @@ func TestDBScan(t *testing.T) {
 	}
 
 	tests := []struct {
+		desc           string
 		dp             dbscan_profile.DbscanProfile
 		sp             spots_profile.SpotsProfile
 		expectCountMap map[int]int
 	}{
 		{
+			"Hubeny: 1個,5個と分類されるケース",
 			dbscanProfiles[0],
 			spotProfiles[0],
 			map[int]int{
@@ -131,6 +133,7 @@ func TestDBScan(t *testing.T) {
 			},
 		},
 		{
+			"Hubeny: 1個,3個,2個と分類されるケース",
 			dbscanProfiles[1],
 			spotProfiles[0],
 			map[int]int{
@@ -140,34 +143,41 @@ func TestDBScan(t *testing.T) {
 			},
 		},
 		{
+			"Hubeny: 1個,2個,2個,1個と分類されMinCount2に満たないやつが2つ出るケース",
 			dbscanProfiles[2],
 			spotProfiles[0],
 			map[int]int{
 				cluster_element.CLUSTER_LACK: 2,
 				1:                            2,
 				2:                            2,
-			}, // 分類される要素数が[1,2,2,1]となりMinCount2に満たないやつが2つ出る
+			},
 		},
 	}
 
 	for _, tt := range tests {
-		ces, err := cs.DBScan(spotMap, tt.dp, tt.sp)
-		assert.NoError(t, err)
-
-		countMap := make(map[int]int)
-		for _, ce := range ces {
-			if _, ok := countMap[ce.AssignedNumber()]; !ok {
-				countMap[ce.AssignedNumber()] = 1
-			} else {
-				countMap[ce.AssignedNumber()] += 1
+		t.Run(tt.desc, func(t *testing.T) {
+			spots := make(map[spot.Identifier]spot.Spot)
+			for _, si := range tt.sp.Spots() {
+				spots[si] = spotMap[si]
 			}
-		}
+			ces, err := cs.DBScan(spots, tt.dp)
+			assert.NoError(t, err)
 
-		assert.Equal(t, len(tt.expectCountMap), len(countMap))
-		for k, expected := range tt.expectCountMap {
-			actual, ok := countMap[k]
-			assert.True(t, ok)
-			assert.Equal(t, expected, actual)
-		}
+			countMap := make(map[int]int)
+			for _, ce := range ces {
+				if _, ok := countMap[ce.AssignedNumber()]; !ok {
+					countMap[ce.AssignedNumber()] = 1
+				} else {
+					countMap[ce.AssignedNumber()] += 1
+				}
+			}
+
+			assert.Equal(t, len(tt.expectCountMap), len(countMap))
+			for k, expected := range tt.expectCountMap {
+				actual, ok := countMap[k]
+				assert.True(t, ok)
+				assert.Equal(t, expected, actual)
+			}
+		})
 	}
 }

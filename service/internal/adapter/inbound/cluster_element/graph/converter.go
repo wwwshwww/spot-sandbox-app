@@ -12,7 +12,6 @@ func BatchMarshal(ces []cluster_element.ClusterElement) []*model.ClusterElement 
 		m := &model.ClusterElement{
 			Key:             int(ce.Identifier()),
 			DbscanProfileID: ce.DbscanProfileIdentifier(),
-			SpotsProfileID:  ce.SpotProfileIdentifier(),
 			SpotID:          ce.SpotIdentifier(),
 			AssignedNumber:  ce.AssignedNumber(),
 			Paths:           make([]*model.ClusterElement, 0, len(ce.Paths())),

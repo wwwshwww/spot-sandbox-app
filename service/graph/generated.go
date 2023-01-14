@@ -53,7 +53,6 @@ type ComplexityRoot struct {
 		Key            func(childComplexity int) int
 		Paths          func(childComplexity int) int
 		Spot           func(childComplexity int) int
-		SpotsProfile   func(childComplexity int) int
 	}
 
 	DbscanProfile struct {
@@ -66,11 +65,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateDbscanProfile func(childComplexity int, input model.NewDbscanProfile) int
+		CreateDbscanProfile func(childComplexity int, input model.DbscanProfileParam) int
 		CreateSpot          func(childComplexity int, input model.LatLng) int
-		CreateSpotsProfile  func(childComplexity int, input model.NewSpotsProfile) int
-		UpdateDbscanProfile func(childComplexity int, key int, input model.NewDbscanProfile) int
-		UpdateSpotsProfile  func(childComplexity int, key int, input model.NewSpotsProfile) int
+		CreateSpotsProfile  func(childComplexity int, input model.SpotsProfileParam) int
+		UpdateDbscanProfile func(childComplexity int, key int, input model.DbscanProfileParam) int
+		UpdateSpotsProfile  func(childComplexity int, key int, input model.SpotsProfileParam) int
 	}
 
 	Query struct {
@@ -99,15 +98,14 @@ type ComplexityRoot struct {
 
 type ClusterElementResolver interface {
 	DbscanProfile(ctx context.Context, obj *model.ClusterElement) (*model.DbscanProfile, error)
-	SpotsProfile(ctx context.Context, obj *model.ClusterElement) (*model.SpotsProfile, error)
 	Spot(ctx context.Context, obj *model.ClusterElement) (*model.Spot, error)
 }
 type MutationResolver interface {
-	CreateDbscanProfile(ctx context.Context, input model.NewDbscanProfile) (*model.DbscanProfile, error)
-	CreateSpotsProfile(ctx context.Context, input model.NewSpotsProfile) (*model.SpotsProfile, error)
+	CreateDbscanProfile(ctx context.Context, input model.DbscanProfileParam) (*model.DbscanProfile, error)
+	CreateSpotsProfile(ctx context.Context, input model.SpotsProfileParam) (*model.SpotsProfile, error)
 	CreateSpot(ctx context.Context, input model.LatLng) (*model.Spot, error)
-	UpdateDbscanProfile(ctx context.Context, key int, input model.NewDbscanProfile) (*model.DbscanProfile, error)
-	UpdateSpotsProfile(ctx context.Context, key int, input model.NewSpotsProfile) (*model.SpotsProfile, error)
+	UpdateDbscanProfile(ctx context.Context, key int, input model.DbscanProfileParam) (*model.DbscanProfile, error)
+	UpdateSpotsProfile(ctx context.Context, key int, input model.SpotsProfileParam) (*model.SpotsProfile, error)
 }
 type QueryResolver interface {
 	Spots(ctx context.Context) ([]*model.Spot, error)
@@ -172,13 +170,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClusterElement.Spot(childComplexity), true
 
-	case "ClusterElement.spotsProfile":
-		if e.complexity.ClusterElement.SpotsProfile == nil {
-			break
-		}
-
-		return e.complexity.ClusterElement.SpotsProfile(childComplexity), true
-
 	case "DbscanProfile.distanceType":
 		if e.complexity.DbscanProfile.DistanceType == nil {
 			break
@@ -231,7 +222,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateDbscanProfile(childComplexity, args["input"].(model.NewDbscanProfile)), true
+		return e.complexity.Mutation.CreateDbscanProfile(childComplexity, args["input"].(model.DbscanProfileParam)), true
 
 	case "Mutation.createSpot":
 		if e.complexity.Mutation.CreateSpot == nil {
@@ -255,7 +246,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateSpotsProfile(childComplexity, args["input"].(model.NewSpotsProfile)), true
+		return e.complexity.Mutation.CreateSpotsProfile(childComplexity, args["input"].(model.SpotsProfileParam)), true
 
 	case "Mutation.updateDbscanProfile":
 		if e.complexity.Mutation.UpdateDbscanProfile == nil {
@@ -267,7 +258,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateDbscanProfile(childComplexity, args["key"].(int), args["input"].(model.NewDbscanProfile)), true
+		return e.complexity.Mutation.UpdateDbscanProfile(childComplexity, args["key"].(int), args["input"].(model.DbscanProfileParam)), true
 
 	case "Mutation.updateSpotsProfile":
 		if e.complexity.Mutation.UpdateSpotsProfile == nil {
@@ -279,7 +270,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateSpotsProfile(childComplexity, args["key"].(int), args["input"].(model.NewSpotsProfile)), true
+		return e.complexity.Mutation.UpdateSpotsProfile(childComplexity, args["key"].(int), args["input"].(model.SpotsProfileParam)), true
 
 	case "Query.dbscan":
 		if e.complexity.Query.Dbscan == nil {
@@ -408,9 +399,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputDbscanParam,
+		ec.unmarshalInputDbscanProfileParam,
 		ec.unmarshalInputLatLng,
-		ec.unmarshalInputNewDbscanProfile,
-		ec.unmarshalInputNewSpotsProfile,
+		ec.unmarshalInputSpotsProfileParam,
 	)
 	first := true
 
@@ -493,10 +484,10 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_createDbscanProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.NewDbscanProfile
+	var arg0 model.DbscanProfileParam
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewDbscanProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewDbscanProfile(ctx, tmp)
+		arg0, err = ec.unmarshalNDbscanProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfileParam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -523,10 +514,10 @@ func (ec *executionContext) field_Mutation_createSpot_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_createSpotsProfile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.NewSpotsProfile
+	var arg0 model.SpotsProfileParam
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNNewSpotsProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewSpotsProfile(ctx, tmp)
+		arg0, err = ec.unmarshalNSpotsProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfileParam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -547,10 +538,10 @@ func (ec *executionContext) field_Mutation_updateDbscanProfile_args(ctx context.
 		}
 	}
 	args["key"] = arg0
-	var arg1 model.NewDbscanProfile
+	var arg1 model.DbscanProfileParam
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewDbscanProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewDbscanProfile(ctx, tmp)
+		arg1, err = ec.unmarshalNDbscanProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfileParam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -571,10 +562,10 @@ func (ec *executionContext) field_Mutation_updateSpotsProfile_args(ctx context.C
 		}
 	}
 	args["key"] = arg0
-	var arg1 model.NewSpotsProfile
+	var arg1 model.SpotsProfileParam
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNNewSpotsProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewSpotsProfile(ctx, tmp)
+		arg1, err = ec.unmarshalNSpotsProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfileParam(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -798,56 +789,6 @@ func (ec *executionContext) fieldContext_ClusterElement_dbscanProfile(ctx contex
 	return fc, nil
 }
 
-func (ec *executionContext) _ClusterElement_spotsProfile(ctx context.Context, field graphql.CollectedField, obj *model.ClusterElement) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_ClusterElement_spotsProfile(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.ClusterElement().SpotsProfile(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.SpotsProfile)
-	fc.Result = res
-	return ec.marshalNSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfile(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_ClusterElement_spotsProfile(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "ClusterElement",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "key":
-				return ec.fieldContext_SpotsProfile_key(ctx, field)
-			case "spots":
-				return ec.fieldContext_SpotsProfile_spots(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type SpotsProfile", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _ClusterElement_spot(ctx context.Context, field graphql.CollectedField, obj *model.ClusterElement) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ClusterElement_spot(ctx, field)
 	if err != nil {
@@ -991,8 +932,6 @@ func (ec *executionContext) fieldContext_ClusterElement_paths(ctx context.Contex
 				return ec.fieldContext_ClusterElement_key(ctx, field)
 			case "dbscanProfile":
 				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
-			case "spotsProfile":
-				return ec.fieldContext_ClusterElement_spotsProfile(ctx, field)
 			case "spot":
 				return ec.fieldContext_ClusterElement_spot(ctx, field)
 			case "assignedNumber":
@@ -1275,7 +1214,7 @@ func (ec *executionContext) _Mutation_createDbscanProfile(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateDbscanProfile(rctx, fc.Args["input"].(model.NewDbscanProfile))
+		return ec.resolvers.Mutation().CreateDbscanProfile(rctx, fc.Args["input"].(model.DbscanProfileParam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1344,7 +1283,7 @@ func (ec *executionContext) _Mutation_createSpotsProfile(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateSpotsProfile(rctx, fc.Args["input"].(model.NewSpotsProfile))
+		return ec.resolvers.Mutation().CreateSpotsProfile(rctx, fc.Args["input"].(model.SpotsProfileParam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1472,7 +1411,7 @@ func (ec *executionContext) _Mutation_updateDbscanProfile(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateDbscanProfile(rctx, fc.Args["key"].(int), fc.Args["input"].(model.NewDbscanProfile))
+		return ec.resolvers.Mutation().UpdateDbscanProfile(rctx, fc.Args["key"].(int), fc.Args["input"].(model.DbscanProfileParam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1541,7 +1480,7 @@ func (ec *executionContext) _Mutation_updateSpotsProfile(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateSpotsProfile(rctx, fc.Args["key"].(int), fc.Args["input"].(model.NewSpotsProfile))
+		return ec.resolvers.Mutation().UpdateSpotsProfile(rctx, fc.Args["key"].(int), fc.Args["input"].(model.SpotsProfileParam))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1983,8 +1922,6 @@ func (ec *executionContext) fieldContext_Query_dbscan(ctx context.Context, field
 				return ec.fieldContext_ClusterElement_key(ctx, field)
 			case "dbscanProfile":
 				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
-			case "spotsProfile":
-				return ec.fieldContext_ClusterElement_spotsProfile(ctx, field)
 			case "spot":
 				return ec.fieldContext_ClusterElement_spot(ctx, field)
 			case "assignedNumber":
@@ -4238,7 +4175,7 @@ func (ec *executionContext) unmarshalInputDbscanParam(ctx context.Context, obj i
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"dbscanProfileKey", "spotsProfileKey"}
+	fieldsInOrder := [...]string{"dbscanProfileKey", "spotKeys"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4253,11 +4190,11 @@ func (ec *executionContext) unmarshalInputDbscanParam(ctx context.Context, obj i
 			if err != nil {
 				return it, err
 			}
-		case "spotsProfileKey":
+		case "spotKeys":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotsProfileKey"))
-			it.SpotsProfileKey, err = ec.unmarshalNInt2int(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("spotKeys"))
+			it.SpotKeys, err = ec.unmarshalNInt2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4267,44 +4204,8 @@ func (ec *executionContext) unmarshalInputDbscanParam(ctx context.Context, obj i
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputLatLng(ctx context.Context, obj interface{}) (model.LatLng, error) {
-	var it model.LatLng
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"lat", "lng"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "lat":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lat"))
-			it.Lat, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "lng":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lng"))
-			it.Lng, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputNewDbscanProfile(ctx context.Context, obj interface{}) (model.NewDbscanProfile, error) {
-	var it model.NewDbscanProfile
+func (ec *executionContext) unmarshalInputDbscanProfileParam(ctx context.Context, obj interface{}) (model.DbscanProfileParam, error) {
+	var it model.DbscanProfileParam
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4363,8 +4264,44 @@ func (ec *executionContext) unmarshalInputNewDbscanProfile(ctx context.Context, 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputNewSpotsProfile(ctx context.Context, obj interface{}) (model.NewSpotsProfile, error) {
-	var it model.NewSpotsProfile
+func (ec *executionContext) unmarshalInputLatLng(ctx context.Context, obj interface{}) (model.LatLng, error) {
+	var it model.LatLng
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"lat", "lng"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "lat":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lat"))
+			it.Lat, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "lng":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lng"))
+			it.Lng, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSpotsProfileParam(ctx context.Context, obj interface{}) (model.SpotsProfileParam, error) {
+	var it model.SpotsProfileParam
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4426,26 +4363,6 @@ func (ec *executionContext) _ClusterElement(ctx context.Context, sel ast.Selecti
 					}
 				}()
 				res = ec._ClusterElement_dbscanProfile(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
-		case "spotsProfile":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._ClusterElement_spotsProfile(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -5378,6 +5295,11 @@ func (ec *executionContext) marshalNDbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋ
 	return ec._DbscanProfile(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNDbscanProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfileParam(ctx context.Context, v interface{}) (model.DbscanProfileParam, error) {
+	res, err := ec.unmarshalInputDbscanProfileParam(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNDistanceType2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDistanceType(ctx context.Context, v interface{}) (model.DistanceType, error) {
 	var res model.DistanceType
 	err := res.UnmarshalGQL(v)
@@ -5452,16 +5374,6 @@ func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.S
 
 func (ec *executionContext) unmarshalNLatLng2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐLatLng(ctx context.Context, v interface{}) (model.LatLng, error) {
 	res, err := ec.unmarshalInputLatLng(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNNewDbscanProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewDbscanProfile(ctx context.Context, v interface{}) (model.NewDbscanProfile, error) {
-	res, err := ec.unmarshalInputNewDbscanProfile(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNNewSpotsProfile2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐNewSpotsProfile(ctx context.Context, v interface{}) (model.NewSpotsProfile, error) {
-	res, err := ec.unmarshalInputNewSpotsProfile(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -5579,6 +5491,11 @@ func (ec *executionContext) marshalNSpotsProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋs
 		return graphql.Null
 	}
 	return ec._SpotsProfile(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSpotsProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐSpotsProfileParam(ctx context.Context, v interface{}) (model.SpotsProfileParam, error) {
+	res, err := ec.unmarshalInputSpotsProfileParam(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

@@ -13,7 +13,6 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/cluster_element"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile"
 )
 
 var (
@@ -26,7 +25,6 @@ type ClusteringService interface {
 	DBScan(
 		map[spot.Identifier]spot.Spot,
 		dbscan_profile.DbscanProfile,
-		spots_profile.SpotsProfile,
 	) (
 		[]cluster_element.ClusterElement,
 		error,
@@ -54,38 +52,36 @@ func NewClusteringService(
 	}
 }
 
+// TODO: cluster集約のメソッドとして書けそう
 func (c *clusteringService) DBScan(
 	spots map[spot.Identifier]spot.Spot,
 	dbscanProfile dbscan_profile.DbscanProfile,
-	spotsProfile spots_profile.SpotsProfile,
 ) (
 	[]cluster_element.ClusterElement,
 	error,
 ) {
-	if spotsProfile == nil {
-		return nil, errors.New("spots profile is nil")
-	}
 	if dbscanProfile == nil {
 		return nil, errors.New("dbscan profile not found")
 	}
-	if len(spots) == 0 || len(spotsProfile.Spots()) == 0 {
+	if len(spots) == 0 {
 		return nil, errors.New("zero spot")
 	}
 
 	// 対象地点を緯度で大きい順にソートする
-	targetSpotIDs := make([]spot.Identifier, len(spotsProfile.Spots()))
-	copy(targetSpotIDs, spotsProfile.Spots())
+	targetSpotIDs := make([]spot.Identifier, 0, len(spots))
+	for si := range spots {
+		targetSpotIDs = append(targetSpotIDs, si)
+	}
 	sort.SliceStable(targetSpotIDs, func(i, j int) bool {
 		return spots[targetSpotIDs[i]].Address().Lat() > spots[targetSpotIDs[j]].Address().Lat()
 	})
 
 	// 結果として返すclusterElementの原型を作成
-	clusterElements := make([]cluster_element.ClusterElement, len(targetSpotIDs))
+	clusterElements := make([]cluster_element.ClusterElement, len(spots))
 	for i, si := range targetSpotIDs {
 		clusterElements[i] = cluster_element.New(
 			cluster_element.Identifier(i),
 			dbscanProfile.Identifier(),
-			spotsProfile.Identifier(),
 			si,
 		)
 	}

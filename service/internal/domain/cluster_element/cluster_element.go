@@ -5,8 +5,9 @@ import (
 
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/dbscan_profile/dbscan_profile"
 	"github.com/wwwwshwww/spot-sandbox/internal/domain/spot/spot"
-	"github.com/wwwwshwww/spot-sandbox/internal/domain/spots_profile/spots_profile"
 )
+
+// TODO: clusterという集約ルートを作成するべき
 
 const (
 	CLUSTER_NOT_ASSIGN = 0  // クラスタリング未処理
@@ -20,7 +21,6 @@ var (
 type ClusterElement interface {
 	Identifier() Identifier
 	DbscanProfileIdentifier() dbscan_profile.Identifier
-	SpotProfileIdentifier() spots_profile.Identifier
 	SpotIdentifier() spot.Identifier
 
 	AssignedNumber() int
@@ -46,13 +46,11 @@ type ClusterElementPreference struct {
 func New(
 	i Identifier,
 	dsi dbscan_profile.Identifier,
-	spi spots_profile.Identifier,
 	si spot.Identifier,
 ) ClusterElement {
 	return &clusterElement{
 		identifier:              i,
 		dbscanProfileIdentifier: dsi,
-		spotsProfileIdentifier:  spi,
 		spotIdentifier:          si,
 		assignedNumber:          CLUSTER_NOT_ASSIGN,
 		paths:                   []Identifier{},
@@ -62,11 +60,10 @@ func New(
 func Restore(
 	i Identifier,
 	dsi dbscan_profile.Identifier,
-	spi spots_profile.Identifier,
 	si spot.Identifier,
 	p ClusterElementPreference,
 ) (ClusterElement, error) {
-	ce := New(i, dsi, spi, si)
+	ce := New(i, dsi, si)
 	if err := ce.OverWrite(p); err != nil {
 		return nil, err
 	}
@@ -76,7 +73,6 @@ func Restore(
 type clusterElement struct {
 	identifier              Identifier
 	dbscanProfileIdentifier dbscan_profile.Identifier
-	spotsProfileIdentifier  spots_profile.Identifier
 	spotIdentifier          spot.Identifier
 	assignedNumber          int
 	paths                   []Identifier
@@ -87,9 +83,6 @@ func (e *clusterElement) Identifier() Identifier {
 }
 func (e *clusterElement) DbscanProfileIdentifier() dbscan_profile.Identifier {
 	return e.dbscanProfileIdentifier
-}
-func (e *clusterElement) SpotProfileIdentifier() spots_profile.Identifier {
-	return e.spotsProfileIdentifier
 }
 func (e *clusterElement) SpotIdentifier() spot.Identifier {
 	return e.spotIdentifier

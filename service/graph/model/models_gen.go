@@ -8,18 +8,13 @@ import (
 	"strconv"
 )
 
-// TODO: profileのIDを指定するのではなく計算に必要なパラメータを生で扱えるようにしたほうが良さげ
+// TODO: profileのIDを指定するかたちではなく各パラメータを生で扱えるようにすべき
 type DbscanParam struct {
-	DbscanProfileKey int `json:"dbscanProfileKey"`
-	SpotsProfileKey  int `json:"spotsProfileKey"`
+	DbscanProfileKey int   `json:"dbscanProfileKey"`
+	SpotKeys         []int `json:"spotKeys"`
 }
 
-type LatLng struct {
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
-}
-
-type NewDbscanProfile struct {
+type DbscanProfileParam struct {
 	DistanceType     DistanceType `json:"distanceType"`
 	MinCount         int          `json:"minCount"`
 	MaxCount         *int         `json:"maxCount"`
@@ -27,7 +22,12 @@ type NewDbscanProfile struct {
 	MinutesThreshold *int         `json:"minutesThreshold"`
 }
 
-type NewSpotsProfile struct {
+type LatLng struct {
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
+}
+
+type SpotsProfileParam struct {
 	SpotKeys []int `json:"spotKeys"`
 }
 

@@ -35,7 +35,6 @@ type Spot {
 type ClusterElement {
   key: Int!
 	dbscanProfile: DbscanProfile!
-	spotsProfile:  SpotsProfile!
 	spot: Spot!
 	assignedNumber: Int!
 	paths: [ClusterElement!]!
@@ -53,13 +52,13 @@ type Query {
   dbscan(param: DbscanParam!): [ClusterElement!]!
 }
 
-""" TODO: profileのIDを指定するのではなく計算に必要なパラメータを生で扱えるようにしたほうが良さげ """
+""" TODO: profileのIDを指定するかたちではなく各パラメータを生で扱えるようにすべき """
 input DbscanParam {
   dbscanProfileKey: Int!
-  spotsProfileKey: Int!
+  spotKeys: [Int!]!
 }
 
-input NewDbscanProfile {
+input DbscanProfileParam {
   distanceType: DistanceType!
   minCount: Int!
   maxCount: Int
@@ -67,7 +66,7 @@ input NewDbscanProfile {
   minutesThreshold: Int
 }
 
-input NewSpotsProfile {
+input SpotsProfileParam {
   spotKeys: [Int!]!
 }
 
@@ -77,10 +76,10 @@ input LatLng {
 }
 
 type Mutation {
-  createDbscanProfile(input: NewDbscanProfile!): DbscanProfile!
-  createSpotsProfile(input: NewSpotsProfile!): SpotsProfile!
+  createDbscanProfile(input: DbscanProfileParam!): DbscanProfile!
+  createSpotsProfile(input: SpotsProfileParam!): SpotsProfile!
   createSpot(input: LatLng!): Spot!
 
-  updateDbscanProfile(key: Int!, input: NewDbscanProfile!): DbscanProfile!
-  updateSpotsProfile(key: Int!, input: NewSpotsProfile!): SpotsProfile!
+  updateDbscanProfile(key: Int!, input: DbscanProfileParam!): DbscanProfile!
+  updateSpotsProfile(key: Int!, input: SpotsProfileParam!): SpotsProfile!
 }

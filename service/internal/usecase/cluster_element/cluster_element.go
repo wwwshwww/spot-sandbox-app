@@ -8,8 +8,10 @@ import (
 	"github.com/wwwwshwww/spot-sandbox/internal/domain_service"
 )
 
+// TODO: ClusterElementは値オブジェクトに近い存在なので集約ルートのClusterでusecaseを作成すべき
+
 type ClusterElementUsecase interface {
-	Calc(dbscan_profile.Identifier, spots_profile.Identifier) ([]cluster_element.ClusterElement, error)
+	Calc(dbscan_profile.Identifier, []spot.Identifier) ([]cluster_element.ClusterElement, error)
 }
 
 func New(
@@ -35,16 +37,12 @@ type clusterElementUsecase struct {
 
 func (u clusterElementUsecase) Calc(
 	dpi dbscan_profile.Identifier,
-	spi spots_profile.Identifier,
+	sis []spot.Identifier,
 ) (
 	[]cluster_element.ClusterElement,
 	error,
 ) {
-	sp, err := u.spr.Get(spi)
-	if err != nil {
-		return nil, err
-	}
-	spots, err := u.sr.BulkGet(sp.Spots())
+	spots, err := u.sr.BulkGet(sis)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +50,7 @@ func (u clusterElementUsecase) Calc(
 	if err != nil {
 		return nil, err
 	}
-	ces, err := u.cs.DBScan(spots, dp, sp)
+	ces, err := u.cs.DBScan(spots, dp)
 	if err != nil {
 		return nil, err
 	}

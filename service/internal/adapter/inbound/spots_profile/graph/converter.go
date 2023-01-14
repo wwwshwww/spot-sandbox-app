@@ -18,7 +18,7 @@ func UnmarshalIdentifier(m int) spots_profile.Identifier {
 	return spots_profile.Identifier(m)
 }
 
-func UnmarshalPreferences(m model.NewSpotsProfile) spots_profile.SpotsProfilePreferences {
+func UnmarshalPreferences(m model.SpotsProfileParam) spots_profile.SpotsProfilePreferences {
 	return spots_profile.SpotsProfilePreferences{
 		Spots: common.Map(UnmarshalSpotIdentifier, m.SpotKeys),
 	}

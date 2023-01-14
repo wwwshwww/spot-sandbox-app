@@ -42,7 +42,7 @@ func UnmarshalIdentifier(m int) dbscan_profile.Identifier {
 	return dbscan_profile.Identifier(m)
 }
 
-func UnmarshalPreferences(m model.NewDbscanProfile) dbscan_profile.DbscanProfilePreferences {
+func UnmarshalPreferences(m model.DbscanProfileParam) dbscan_profile.DbscanProfilePreferences {
 	return dbscan_profile.DbscanProfilePreferences{
 		DistanceType:   UnmarshalDistanceType(m.DistanceType),
 		MinCount:       m.MinCount,

@@ -29,11 +29,11 @@ interface MyHoji{
 
 function Hoji(): MyHoji {
   useEffect(()=>{
-    console.log("eff")
+    console.log("Test: eff")
   })
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  console.log("rendered", state)
+  console.log("Test: rendered", state)
 
   return (
     {state, dispatch}

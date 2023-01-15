@@ -30,13 +30,16 @@ export interface CSPAction {
 function reducer(state: CSPState, action: CSPAction): CSPState {
   switch (action.type) {
     case CSPActionType.set:
-      state.spotsProfile = action.payload.spotsProfile;
-      return state;
+      return { spotsProfile: action.payload.spotsProfile };
     case CSPActionType.updateSpots:
       if (state.spotsProfile && action.payload.spots) {
         // TODO: アップデートクエリによる更新
-        state.spotsProfile.spots = action.payload.spots;
-        return state;
+        return {
+          spotsProfile: {
+            key: state.spotsProfile.key,
+            spots: action.payload.spots,
+          },
+        };
       } else {
         throw new Error();
       }
@@ -57,7 +60,35 @@ const getCurrentSpotsProfileState = (): CSPStateAndReducer => {
   return { currentSpotsProfile, dispatch };
 };
 
-export const ClusteringSpot: React.FC = () => {
+const calcForGoogleMap = (spots: Array<Spot>) => {
+  const scaleConverter = 1.7;
+  let totalLat = 0;
+  let totalLng = 0;
+  let maxLat = -999;
+  let maxLng = -999;
+  let minLat = 999;
+  let minLng = 999;
+  for (const s of spots) {
+    totalLat += s.lat;
+    totalLng += s.lng;
+    maxLat = s.lat > maxLat ? s.lat : maxLat;
+    maxLng = s.lng > maxLng ? s.lng : maxLng;
+    minLat = s.lat < minLat ? s.lat : minLat;
+    minLng = s.lng < minLng ? s.lng : minLng;
+  }
+
+  const diffLat = Math.abs(maxLat-minLat);
+  const diffLng = Math.abs(maxLng-minLng);
+  return {
+    zoom: diffLat > diffLng? scaleConverter / diffLat : scaleConverter / diffLng,
+    center: {
+      lat: totalLat / spots.length,
+      lng: totalLng / spots.length,
+    },
+  };
+};
+
+export const ClusteringSpot = () => {
   const {
     loading: spLoading,
     error: spErr,
@@ -89,7 +120,11 @@ export const ClusteringSpot: React.FC = () => {
               />
             </Grid>
             <Grid>
-              <SpotsCanvas initSpots={spots} />
+              <SpotsCanvas
+                initSpots={spots!}
+                defaultGoogleMapParams={calcForGoogleMap(spots!)}
+                currentSpotsProfile={currentSpotsProfile}
+              />
             </Grid>
             <Grid>
               <DbscanProfileEditor />

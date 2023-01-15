@@ -1,11 +1,7 @@
 import { Box, Button, Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { useState } from "react";
-import {
-  CSPActionType,
-  CSPStateAndReducer,
-  CSPState,
-} from "../..";
+import { CSPActionType, CSPStateAndReducer, CSPState } from "../..";
 import { SpotsProfile } from "../../../../generates/types";
 import ScrollableList from "../../../General/ScrollableList";
 import useGetAll from "./hooks/GetAll";
@@ -29,13 +25,12 @@ interface EditorProps {
 
 const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
   const [spotsProfiles, setSpotsProfiles] = useState(props.initSpotsProfiles);
-  const { currentSpotsProfile: initCsp, dispatch } = props.initCurrent;
-  const [csp, setCsp] = useState<CSPState>(initCsp);
+  const { currentSpotsProfile, dispatch } = props.initCurrent;
 
   const li = spotsProfiles.map((v: SpotsProfile) => (
     <Card
       sx={
-        v.key == csp.spotsProfile?.key
+        v.key == currentSpotsProfile.spotsProfile?.key
           ? {
               borderColor: "#3f3f3f",
               backgroundColor: "#ddd",
@@ -49,11 +44,17 @@ const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
       paddingLeft={1}
       textAlign="left"
       onClick={() => {
-        dispatch({
-          type: CSPActionType.set,
-          payload: { spotsProfile: v, spots: undefined },
-        });
-        setCsp({ spotsProfile: v });
+        if (v.key == currentSpotsProfile.spotsProfile?.key) {
+          dispatch({
+            type: CSPActionType.set,
+            payload: { spotsProfile: undefined, spots: undefined },
+          });
+        } else {
+          dispatch({
+            type: CSPActionType.set,
+            payload: { spotsProfile: v, spots: undefined },
+          });
+        }
       }}
     >
       {v.key}: {v.spots.length} spots

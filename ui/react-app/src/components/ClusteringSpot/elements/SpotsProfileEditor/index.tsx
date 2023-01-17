@@ -25,7 +25,7 @@ interface EditorProps {
 
 const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
   const [spotsProfiles, setSpotsProfiles] = useState(props.initSpotsProfiles);
-  const { currentSpotsProfile, dispatch } = props.initCurrent;
+  const { currentSpotsProfile, dispatchSP } = props.initCurrent;
 
   const li = spotsProfiles.map((v: SpotsProfile) => (
     <Card
@@ -45,12 +45,12 @@ const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
       textAlign="left"
       onClick={() => {
         if (v.key == currentSpotsProfile.spotsProfile?.key) {
-          dispatch({
+          dispatchSP({
             type: CSPActionType.set,
             payload: { spotsProfile: undefined, spots: undefined },
           });
         } else {
-          dispatch({
+          dispatchSP({
             type: CSPActionType.set,
             payload: { spotsProfile: v, spots: undefined },
           });

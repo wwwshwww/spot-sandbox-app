@@ -15,6 +15,7 @@ interface SpotMarkerProps {
     lat: number;
     lng: number;
   };
+  onClick: ((e: google.maps.MapMouseEvent) => void) | undefined;
 }
 
 export const getUnselectedColor = () => {
@@ -35,26 +36,27 @@ export const getSelectedColor = () => {
   };
 };
 
-export const SpotMarker = ({ color, labelText, visible, latlng }: SpotMarkerProps) => {
+export const SpotMarker = (props: SpotMarkerProps) => {
   return (
     <Marker
+      onClick={props.onClick}
       icon={{
         path: " M 0 0 L -10 -30 A 10 12 1 0 1 10 -30 Z ",
-        fillColor: color.fill,
+        fillColor: props.color.fill,
         // fillColor: 'hsl(' + baseColor + ', 100%, 75%)',
-        fillOpacity: color.fillOpacity,
+        fillOpacity: props.color.fillOpacity,
         strokeWeight: 1,
-        strokeColor: color.stroke,
-        strokeOpacity: color.strokeOpacity,
+        strokeColor: props.color.stroke,
+        strokeOpacity: props.color.strokeOpacity,
         // strokeColor: 'hsl(' + baseColor + ', 40%, 45%)',
         scale: 1,
         labelOrigin: new google.maps.Point(0, -31),
       }}
-      position={{ lat: latlng.lat, lng: latlng.lng }}
-      visible={visible}
+      position={{ lat: props.latlng.lat, lng: props.latlng.lng }}
+      visible={props.visible}
       label={{
         color: "#333333",
-        text: labelText,
+        text: props.labelText,
         fontSize: "11px",
         fontWeight: "700",
       }}

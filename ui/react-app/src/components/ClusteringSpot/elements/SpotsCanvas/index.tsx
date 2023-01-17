@@ -2,7 +2,7 @@ import { Button, Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { LoadScript, GoogleMap } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
-import { CSPState } from "../..";
+import { CSPActionType, CSPState, CSPStateAndReducer } from "../..";
 import { Spot } from "../../../../generates/types";
 import { mapStyles, mapOptions } from "../../../../styles/GoogleMapStyle";
 import {
@@ -27,7 +27,7 @@ interface SpotsCanvasProps {
     zoom: number;
     center: { lat: number; lng: number };
   };
-  currentSpotsProfile: CSPState;
+  currentSpotsProfileParams: CSPStateAndReducer;
 }
 
 const SpotsCanvas = (props: SpotsCanvasProps) => {
@@ -35,15 +35,22 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
   const [center, setCenter] = useState(props.defaultGoogleMapParams.center);
   const [zoom, setZoom] = useState(props.defaultGoogleMapParams.zoom);
 
+  const { currentSpotsProfile, dispatchSP } = props.currentSpotsProfileParams;
+
   const selectedDict: { [key: number]: boolean } = {};
-  if (props.currentSpotsProfile.spotsProfile !== undefined) {
-    for (const spot of props.currentSpotsProfile.spotsProfile.spots!) {
+  if (currentSpotsProfile.spotsProfile !== undefined) {
+    for (const spot of currentSpotsProfile.spotsProfile.spots!) {
       selectedDict[spot.key] = true;
     }
   }
 
   const markers = spots?.map((v: Spot, i: number) => {
     const isSelected = selectedDict[v.key] !== undefined;
+    const newSpots = isSelected
+      ? currentSpotsProfile.spotsProfile?.spots!.filter((s: Spot) => {
+          return s.key !== v.key;
+        })
+      : currentSpotsProfile.spotsProfile?.spots!.concat(v);
     return (
       <SpotMarker
         key={i}
@@ -51,6 +58,12 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
         labelText={v.key.toString()}
         visible={true}
         latlng={{ lat: v.lat, lng: v.lng }}
+        onClick={() => {
+          dispatchSP({
+            type: CSPActionType.updateSpots,
+            payload: { spotsProfile: undefined, spots: newSpots },
+          });
+        }}
       />
     );
   });

@@ -50,14 +50,14 @@ function reducer(state: CSPState, action: CSPAction): CSPState {
 
 export interface CSPStateAndReducer {
   currentSpotsProfile: CSPState;
-  dispatch: React.Dispatch<CSPAction>;
+  dispatchSP: React.Dispatch<CSPAction>;
 }
 
 const initialCSP: CSPState = { spotsProfile: undefined };
 
 const getCurrentSpotsProfileState = (): CSPStateAndReducer => {
-  const [currentSpotsProfile, dispatch] = useReducer(reducer, initialCSP);
-  return { currentSpotsProfile, dispatch };
+  const [currentSpotsProfile, dispatchSP] = useReducer(reducer, initialCSP);
+  return { currentSpotsProfile, dispatchSP};
 };
 
 const calcForGoogleMap = (spots: Array<Spot>) => {
@@ -94,7 +94,7 @@ export const ClusteringSpot = () => {
     error: spErr,
     spotsProfiles,
   } = GetSpotsProfiles();
-  const { currentSpotsProfile, dispatch: cspDisp } =
+  const { currentSpotsProfile, dispatchSP } =
     getCurrentSpotsProfileState();
 
   const { loading: sLoading, error: sErr, spots } = GetSpots();
@@ -116,14 +116,14 @@ export const ClusteringSpot = () => {
             <Grid>
               <SpotsProfileEditor
                 initSpotsProfiles={spotsProfiles!}
-                initCurrent={{ currentSpotsProfile, dispatch: cspDisp }}
+                initCurrent={{ currentSpotsProfile, dispatchSP}}
               />
             </Grid>
             <Grid>
               <SpotsCanvas
                 initSpots={spots!}
                 defaultGoogleMapParams={calcForGoogleMap(spots!)}
-                currentSpotsProfile={currentSpotsProfile}
+                currentSpotsProfileParams={{currentSpotsProfile, dispatchSP}}
               />
             </Grid>
             <Grid>

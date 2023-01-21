@@ -1,12 +1,19 @@
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
-import { useEffect, useReducer } from "react";
-import { Spot, SpotsProfile } from "../../generates/types";
+import { useEffect, useReducer, useState } from "react";
+import { Spot, SpotsProfile } from "../../generated/types";
 import DbscanProfileEditor from "./elements/DbscanProfileEditor";
 import SpotsCanvas from "./elements/SpotsCanvas";
 import SpotsProfileEditor from "./elements/SpotsProfileEditor";
-import { useGetAll as GetSpotsProfiles } from "./elements/SpotsProfileEditor/hooks/GetAll";
+import {
+  QueryGetAllSpotsProfile,
+  SpotsProfiles,
+  useGetAll as GetSpotsProfiles,
+} from "./elements/SpotsProfileEditor/hooks/GetAll";
 import { useGetAll as GetSpots } from "./elements/SpotsCanvas/hooks/GetAll";
+import { useApolloClient, useQuery } from "@apollo/client";
+import { Data } from "@react-google-maps/api";
+import { MutationUpdateSpotsProfile } from "./elements/SpotsProfileEditor/hooks/Update";
 
 export interface CSPState {
   spotsProfile: SpotsProfile | undefined;
@@ -50,14 +57,14 @@ function reducer(state: CSPState, action: CSPAction): CSPState {
 
 export interface CSPStateAndReducer {
   currentSpotsProfile: CSPState;
-  dispatchSP: React.Dispatch<CSPAction>;
+  dispatchCSP: React.Dispatch<CSPAction>;
 }
 
 const initialCSP: CSPState = { spotsProfile: undefined };
 
 const getCurrentSpotsProfileState = (): CSPStateAndReducer => {
-  const [currentSpotsProfile, dispatchSP] = useReducer(reducer, initialCSP);
-  return { currentSpotsProfile, dispatchSP};
+  const [currentSpotsProfile, dispatchCSP] = useReducer(reducer, initialCSP);
+  return { currentSpotsProfile, dispatchCSP };
 };
 
 const calcForGoogleMap = (spots: Array<Spot>) => {
@@ -77,10 +84,11 @@ const calcForGoogleMap = (spots: Array<Spot>) => {
     minLng = s.lng < minLng ? s.lng : minLng;
   }
 
-  const diffLat = Math.abs(maxLat-minLat);
-  const diffLng = Math.abs(maxLng-minLng);
+  const diffLat = Math.abs(maxLat - minLat);
+  const diffLng = Math.abs(maxLng - minLng);
   return {
-    zoom: diffLat > diffLng? scaleConverter / diffLat : scaleConverter / diffLng,
+    zoom:
+      diffLat > diffLng ? scaleConverter / diffLat : scaleConverter / diffLng,
     center: {
       lat: totalLat / spots.length,
       lng: totalLng / spots.length,
@@ -89,15 +97,73 @@ const calcForGoogleMap = (spots: Array<Spot>) => {
 };
 
 export const ClusteringSpot = () => {
+  const client = useApolloClient();
+
+  const [currentSpotsProfile, dispatchCSP] = useReducer(
+    (state: CSPState, action: CSPAction): CSPState => {
+      switch (action.type) {
+        case CSPActionType.set:
+          return { spotsProfile: action.payload.spotsProfile };
+        case CSPActionType.updateSpots:
+          if (state.spotsProfile && action.payload.spots) {
+            return {
+              spotsProfile: {
+                key: state.spotsProfile.key,
+                spots: action.payload.spots,
+              },
+            };
+          } else {
+            throw new Error();
+          }
+        default:
+          throw new Error();
+      }
+    },
+    initialCSP
+  );
+
+  const [spotsProfiles, setSpotsProfiles] = useState<Array<SpotsProfile>>();
   const {
     loading: spLoading,
     error: spErr,
-    spotsProfiles,
-  } = GetSpotsProfiles();
-  const { currentSpotsProfile, dispatchSP } =
-    getCurrentSpotsProfileState();
+    data: _,
+  } = useQuery<SpotsProfiles>(QueryGetAllSpotsProfile, {
+    onCompleted: (sps) => {
+      setSpotsProfiles(sps.spotsProfiles);
+    },
+  });
 
   const { loading: sLoading, error: sErr, spots } = GetSpots();
+
+  useEffect(() => {
+    if (currentSpotsProfile.spotsProfile) {
+      client
+        .mutate({
+          mutation: MutationUpdateSpotsProfile,
+          variables: {
+            key: currentSpotsProfile.spotsProfile?.key,
+            input: {
+              spotKeys: currentSpotsProfile.spotsProfile?.spots.map((s) => {
+                return s.key;
+              }),
+            },
+          },
+        })
+        .then(() => {
+          client
+            .query<SpotsProfiles>({
+              query: QueryGetAllSpotsProfile,
+              fetchPolicy: 'network-only',
+            })
+            .catch((err) => {
+              throw err;
+            })
+            .then((res) => {
+              setSpotsProfiles(res!.data.spotsProfiles);
+            });
+        });
+    }
+  }, [currentSpotsProfile]);
 
   return (
     <Box>
@@ -106,31 +172,33 @@ export const ClusteringSpot = () => {
         container
         spacing={1}
         // rowSpacing={0}
-        justifyContent="center"
-        alignItems="flex-start"
+        justifyContent='center'
+        alignItems='flex-start'
       >
-        {spLoading || sLoading ? (
-          <p>loading...</p>
-        ) : (
-          <>
-            <Grid>
-              <SpotsProfileEditor
-                initSpotsProfiles={spotsProfiles!}
-                initCurrent={{ currentSpotsProfile, dispatchSP}}
-              />
-            </Grid>
-            <Grid>
-              <SpotsCanvas
-                initSpots={spots!}
-                defaultGoogleMapParams={calcForGoogleMap(spots!)}
-                currentSpotsProfileParams={{currentSpotsProfile, dispatchSP}}
-              />
-            </Grid>
-            <Grid>
-              <DbscanProfileEditor />
-            </Grid>
-          </>
-        )}
+        <Grid>
+          <SpotsProfileEditor
+            spotsProfilesParams={{
+              isLoading: spLoading,
+              error: spErr,
+              spotsProfiles,
+            }}
+            initCurrent={{ currentSpotsProfile, dispatchCSP }}
+          />
+        </Grid>
+        <Grid>
+          {sLoading ? (
+            <p>loading...</p>
+          ) : (
+            <SpotsCanvas
+              initSpots={spots!}
+              defaultGoogleMapParams={calcForGoogleMap(spots!)}
+              currentSpotsProfileParams={{ currentSpotsProfile, dispatchCSP }}
+            />
+          )}
+        </Grid>
+        <Grid>
+          <DbscanProfileEditor />
+        </Grid>
       </Grid>
     </Box>
   );

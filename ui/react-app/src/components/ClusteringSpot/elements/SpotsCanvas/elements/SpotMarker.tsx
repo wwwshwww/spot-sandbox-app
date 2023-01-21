@@ -41,7 +41,7 @@ export const SpotMarker = (props: SpotMarkerProps) => {
     <Marker
       onClick={props.onClick}
       icon={{
-        path: " M 0 0 L -10 -30 A 10 12 1 0 1 10 -30 Z ",
+        path: ' M 0 0 L -10 -30 A 10 12 1 0 1 10 -30 Z ',
         fillColor: props.color.fill,
         // fillColor: 'hsl(' + baseColor + ', 100%, 75%)',
         fillOpacity: props.color.fillOpacity,
@@ -57,8 +57,8 @@ export const SpotMarker = (props: SpotMarkerProps) => {
       label={{
         color: "#333333",
         text: props.labelText,
-        fontSize: "11px",
-        fontWeight: "700",
+        fontSize: '11px',
+        fontWeight: '700',
       }}
     />
   );

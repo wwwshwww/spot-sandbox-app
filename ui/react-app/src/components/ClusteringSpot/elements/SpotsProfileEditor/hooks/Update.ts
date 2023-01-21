@@ -1,12 +1,12 @@
 import { gql } from "@apollo/client";
 
-const QueryGetAllSpotsProfile = gql`
-query GetAllSpotsProfile {
-  spotsProfiles {
-    key
-    spots {
+export const MutationUpdateSpotsProfile = gql`
+  mutation UpdateCurrentSpotsProfile($key: Int!, $input: SpotsProfileParam!) {
+    updateSpotsProfile(key: $key, input: $input){
       key
+      spots{
+        key
+      }
     }
   }
-}
 `;

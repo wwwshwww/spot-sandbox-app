@@ -1,33 +1,40 @@
+import { ApolloError, useQuery } from "@apollo/client";
 import { Box, Button, Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CSPActionType, CSPStateAndReducer, CSPState } from "../..";
-import { SpotsProfile } from "../../../../generates/types";
+import { SpotsProfile } from "../../../../generated/types";
 import ScrollableList from "../../../General/ScrollableList";
-import useGetAll from "./hooks/GetAll";
+import useGetAll, {
+  QueryGetAllSpotsProfile,
+  SpotsProfiles,
+} from "./hooks/GetAll";
 
 const Card = styled(Box)(({ theme }) => ({
   backgroundColor: "#f7f7f7",
-  "&:hover": {
+  '&:hover': {
     marginLeft: 3,
     backgroundColor: "#eee",
   },
-  "&:active": {
+  '&:active': {
     backgroundColor: "#ddd",
     borderColor: "#3f3f3f",
   },
 }));
 
 interface EditorProps {
-  initSpotsProfiles: Array<SpotsProfile>;
+  spotsProfilesParams: {
+    isLoading: boolean;
+    error: ApolloError | undefined;
+    spotsProfiles: Array<SpotsProfile> | undefined;
+  };
   initCurrent: CSPStateAndReducer;
 }
 
 const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
-  const [spotsProfiles, setSpotsProfiles] = useState(props.initSpotsProfiles);
-  const { currentSpotsProfile, dispatchSP } = props.initCurrent;
+  const { currentSpotsProfile, dispatchCSP } = props.initCurrent;
 
-  const li = spotsProfiles.map((v: SpotsProfile) => (
+  const li = props.spotsProfilesParams.spotsProfiles?.map((v: SpotsProfile) => (
     <Card
       sx={
         v.key == currentSpotsProfile.spotsProfile?.key
@@ -42,15 +49,15 @@ const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
       border={1}
       borderRadius={1}
       paddingLeft={1}
-      textAlign="left"
+      textAlign='left'
       onClick={() => {
         if (v.key == currentSpotsProfile.spotsProfile?.key) {
-          dispatchSP({
+          dispatchCSP({
             type: CSPActionType.set,
             payload: { spotsProfile: undefined, spots: undefined },
           });
         } else {
-          dispatchSP({
+          dispatchCSP({
             type: CSPActionType.set,
             payload: { spotsProfile: v, spots: undefined },
           });
@@ -65,7 +72,17 @@ const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
   const createButton = <Button>CREATE</Button>;
 
   return (
-    <ScrollableList title="spot profile" contents={li!} footer={createButton} />
+    <>
+      {props.spotsProfilesParams.isLoading ? (
+        <p>loading...</p>
+      ) : (
+        <ScrollableList
+          title="spot profile"
+          contents={li!}
+          footer={createButton}
+        />
+      )}
+    </>
   );
 };
 

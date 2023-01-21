@@ -3,7 +3,7 @@ import Grid from "@mui/material/Unstable_Grid2";
 import { LoadScript, GoogleMap } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
 import { CSPActionType, CSPState, CSPStateAndReducer } from "../..";
-import { Spot } from "../../../../generates/types";
+import { Spot } from "../../../../generated/types";
 import { mapStyles, mapOptions } from "../../../../styles/GoogleMapStyle";
 import {
   getSelectedColor,
@@ -14,10 +14,10 @@ import {
 const googleMapsApiKey = "APIKEY";
 
 const Item = styled(Paper)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
   ...theme.typography.body2,
   padding: theme.spacing(1),
-  textAlign: "center",
+  textAlign: 'center',
   color: theme.palette.text.secondary,
 }));
 
@@ -35,7 +35,7 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
   const [center, setCenter] = useState(props.defaultGoogleMapParams.center);
   const [zoom, setZoom] = useState(props.defaultGoogleMapParams.zoom);
 
-  const { currentSpotsProfile, dispatchSP } = props.currentSpotsProfileParams;
+  const { currentSpotsProfile, dispatchCSP } = props.currentSpotsProfileParams;
 
   const selectedDict: { [key: number]: boolean } = {};
   if (currentSpotsProfile.spotsProfile !== undefined) {
@@ -59,7 +59,7 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
         visible={true}
         latlng={{ lat: v.lat, lng: v.lng }}
         onClick={() => {
-          dispatchSP({
+          dispatchCSP({
             type: CSPActionType.updateSpots,
             payload: { spotsProfile: undefined, spots: newSpots },
           });
@@ -88,7 +88,7 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
 
       <Grid>
         {spots?.map((v: Spot, i: number) => (
-          <Item key={i} sx={{ textAlign: "left", paddingLeft: 1 }}>
+          <Item key={i} sx={{ textAlign: 'left', paddingLeft: 1 }}>
             <Grid container>
               <Grid>{v.key}:</Grid>
               <Grid>{v.addressRepr}</Grid>

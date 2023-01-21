@@ -1,5 +1,5 @@
 import { gql, useQuery } from "@apollo/client";
-import { Spot } from "../../../../../generates/types";
+import { Spot } from "../../../../../generated/types";
 
 
 const QueryGetAllSpot = gql`

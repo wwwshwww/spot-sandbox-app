@@ -10,12 +10,12 @@ interface ScrollableListProps {
 
 const ScrollableList: React.FC<ScrollableListProps> = (props) => {
   return (
-    <Grid container direction="column" justifyContent="center">
+    <Grid container direction='column' justifyContent='center'>
       <Grid>
         <Item>
           <Grid
             sx={{
-              textTransform: "uppercase",
+              textTransform: 'uppercase',
             }}
           >
             {props.title}
@@ -26,7 +26,7 @@ const ScrollableList: React.FC<ScrollableListProps> = (props) => {
                 maxHeight={250}
                 paddingRight={1}
                 sx={{
-                  overflowY: "scroll",
+                  overflowY: 'scroll',
                 }}
               >
                 {props.contents?.map((v: JSX.Element, i: number) => (

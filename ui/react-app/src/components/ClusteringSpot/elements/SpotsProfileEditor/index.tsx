@@ -26,7 +26,7 @@ interface EditorProps {
   initCurrent: CSPStateAndReducer;
 }
 
-const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
+const SpotsProfileEditor = (props: EditorProps) => {
   const { currentSpotsProfile, dispatchCSP } = props.initCurrent;
 
   const li = props.spotsProfilesParams.spotsProfiles?.map(
@@ -46,7 +46,7 @@ const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
           border={1}
           borderRadius={1}
           paddingLeft={1}
-          textAlign="left"
+          textAlign='left'
           onClick={() => {
             if (v.key == currentSpotsProfile.spotsProfile?.key) {
               dispatchCSP({
@@ -68,11 +68,7 @@ const SpotsProfileEditor: React.FC<EditorProps> = (props) => {
       </span>
     )
   );
-  const createButton = (
-    <Button href={"#sp:" + props.spotsProfilesParams.spotsProfiles?.length}>
-      CREATE
-    </Button>
-  );
+  const createButton = <Button href={"#sp:" + li?.length}>CREATE</Button>;
 
   return (
     <>

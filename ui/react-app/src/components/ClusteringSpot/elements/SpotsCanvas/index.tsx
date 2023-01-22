@@ -2,7 +2,7 @@ import { Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { LoadScript, GoogleMap } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
-import { CSPActionType, CSPStateAndReducer } from "../..";
+import { CDPStateAndReducer, CSPActionType, CSPStateAndReducer } from "../..";
 import { Spot } from "../../../../generated/types";
 import { mapStyles, mapOptions } from "../../../../styles/GoogleMapStyle";
 import {
@@ -28,6 +28,7 @@ interface SpotsCanvasProps {
     center: { lat: number; lng: number };
   };
   currentSpotsProfileParams: CSPStateAndReducer;
+  currentDbscanProfileParams: CDPStateAndReducer;
 }
 
 const SpotsCanvas = (props: SpotsCanvasProps) => {
@@ -36,6 +37,13 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
   const [zoom, setZoom] = useState(props.defaultGoogleMapParams.zoom);
 
   const { currentSpotsProfile, dispatchCSP } = props.currentSpotsProfileParams;
+  const {currentDbscanProfile, dispatchCDP} = props.currentDbscanProfileParams;
+
+  // TODO: add cluster element's state of map with spot key
+
+  useEffect(() => {
+    // TODO: refresh cluster element's state from correspondingly CDP
+  }, [currentDbscanProfile])
 
   const selectedDict: { [key: number]: boolean } = {};
   if (currentSpotsProfile.spotsProfile !== undefined) {

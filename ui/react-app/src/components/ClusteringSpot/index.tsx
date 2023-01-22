@@ -12,6 +12,10 @@ import {
 import { useGetAll as GetSpots } from "./elements/SpotsCanvas/hooks/GetAll";
 import { useApolloClient, useQuery } from "@apollo/client";
 import { MutationUpdateSpotsProfile } from "./elements/SpotsProfileEditor/hooks/Update";
+import {
+  DbscanProfiles,
+  QueryGetAllDbscanProfiles,
+} from "./elements/DbscanProfileEditor/hooks/GetAll";
 
 export interface CSPState {
   spotsProfile?: SpotsProfile;
@@ -118,16 +122,40 @@ export const ClusteringSpot = () => {
     initialCSP
   );
 
-  const [spotsProfiles, setSpotsProfiles] = useState<Array<SpotsProfile>>();
-  const {
-    loading: spLoading,
-    error: spErr,
-    data: _,
-  } = useQuery<SpotsProfiles>(QueryGetAllSpotsProfile, {
-    onCompleted: (sps) => {
-      setSpotsProfiles(sps.spotsProfiles);
+  const [currentDbscanProfile, dispatchCDP] = useReducer(
+    (state: CDPState, action: CDPAction): CDPState => {
+      switch (action.type) {
+        case CDPActionType.set:
+          return { dbscanProfile: action.payload.dbscanProfile };
+        case CDPActionType.update:
+          // TODO: implement
+          return { dbscanProfile: action.payload.dbscanProfile };
+        default:
+          throw new Error();
+      }
     },
-  });
+    initialCDP
+  );
+
+  const [spotsProfiles, setSpotsProfiles] = useState<Array<SpotsProfile>>();
+  const [dbscanProfiles, setDbscanProfiles] = useState<Array<DbscanProfile>>();
+
+  const { loading: spLoading, error: spErr } = useQuery<SpotsProfiles>(
+    QueryGetAllSpotsProfile,
+    {
+      onCompleted: (sps) => {
+        setSpotsProfiles(sps.spotsProfiles);
+      },
+    }
+  );
+  const { loading: dpLoading, error: dpErr } = useQuery<DbscanProfiles>(
+    QueryGetAllDbscanProfiles,
+    {
+      onCompleted: (dps) => {
+        setDbscanProfiles(dps.dbscanProfiles);
+      },
+    }
+  );
 
   const { loading: sLoading, error: sErr, spots } = GetSpots();
 
@@ -189,11 +217,19 @@ export const ClusteringSpot = () => {
               initSpots={spots!}
               defaultGoogleMapParams={calcForGoogleMap(spots!)}
               currentSpotsProfileParams={{ currentSpotsProfile, dispatchCSP }}
+              currentDbscanProfileParams={{ currentDbscanProfile, dispatchCDP }}
             />
           )}
         </Grid>
         <Grid>
-          <DbscanProfileEditor />
+          <DbscanProfileEditor
+            dbscanProfilesParams={{
+              isLoading: dpLoading,
+              error: dpErr,
+              dbscanProfiles,
+            }}
+            initCurrent={{ currentDbscanProfile, dispatchCDP }}
+          />
         </Grid>
       </Grid>
     </Box>

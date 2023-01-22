@@ -1,4 +1,4 @@
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { SpotsProfile } from "../../../../../generated/types";
 
 export const QueryGetAllSpotsProfile = gql`

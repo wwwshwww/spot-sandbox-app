@@ -5,7 +5,7 @@ import Item from "./elements/Item";
 interface ScrollableListProps {
   title: string;
   contents: Array<JSX.Element>;
-  footer: JSX.Element | undefined;
+  footer?: JSX.Element;
 }
 
 const ScrollableList: React.FC<ScrollableListProps> = (props) => {

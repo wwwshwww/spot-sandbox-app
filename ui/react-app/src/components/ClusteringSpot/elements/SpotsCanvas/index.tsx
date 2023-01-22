@@ -1,8 +1,8 @@
-import { Button, Paper, styled } from "@mui/material";
+import { Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import { LoadScript, GoogleMap } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
-import { CSPActionType, CSPState, CSPStateAndReducer } from "../..";
+import { CSPActionType, CSPStateAndReducer } from "../..";
 import { Spot } from "../../../../generated/types";
 import { mapStyles, mapOptions } from "../../../../styles/GoogleMapStyle";
 import {

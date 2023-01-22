@@ -6,7 +6,6 @@ const Top: React.FC = () => {
     <div>
       <h1>_</h1>
       <ClusteringSpot/>
-      <Counter/>
     </div>
   );
 };

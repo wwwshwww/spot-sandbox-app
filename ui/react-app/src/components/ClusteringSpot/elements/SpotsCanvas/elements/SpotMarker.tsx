@@ -1,5 +1,4 @@
 import { Marker } from "@react-google-maps/api";
-import React from "react";
 
 interface SpotMarkerProps {
   color: {
@@ -15,7 +14,7 @@ interface SpotMarkerProps {
     lat: number;
     lng: number;
   };
-  onClick: ((e: google.maps.MapMouseEvent) => void) | undefined;
+  onClick?: ((e: google.maps.MapMouseEvent) => void);
 }
 
 export const getUnselectedColor = () => {

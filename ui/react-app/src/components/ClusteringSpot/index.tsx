@@ -1,22 +1,20 @@
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useEffect, useReducer, useState } from "react";
-import { Spot, SpotsProfile } from "../../generated/types";
+import { DbscanProfile, Spot, SpotsProfile } from "../../generated/types";
 import DbscanProfileEditor from "./elements/DbscanProfileEditor";
 import SpotsCanvas from "./elements/SpotsCanvas";
 import SpotsProfileEditor from "./elements/SpotsProfileEditor";
 import {
   QueryGetAllSpotsProfile,
   SpotsProfiles,
-  useGetAll as GetSpotsProfiles,
 } from "./elements/SpotsProfileEditor/hooks/GetAll";
 import { useGetAll as GetSpots } from "./elements/SpotsCanvas/hooks/GetAll";
 import { useApolloClient, useQuery } from "@apollo/client";
-import { Data } from "@react-google-maps/api";
 import { MutationUpdateSpotsProfile } from "./elements/SpotsProfileEditor/hooks/Update";
 
 export interface CSPState {
-  spotsProfile: SpotsProfile | undefined;
+  spotsProfile?: SpotsProfile;
 }
 
 export enum CSPActionType {
@@ -25,8 +23,8 @@ export enum CSPActionType {
 }
 
 export interface CSPActionPayload {
-  spotsProfile: SpotsProfile | undefined;
-  spots: Array<Spot> | undefined;
+  spotsProfile?: SpotsProfile;
+  spots?: Array<Spot>;
 }
 
 export interface CSPAction {
@@ -34,38 +32,36 @@ export interface CSPAction {
   payload: CSPActionPayload;
 }
 
-function reducer(state: CSPState, action: CSPAction): CSPState {
-  switch (action.type) {
-    case CSPActionType.set:
-      return { spotsProfile: action.payload.spotsProfile };
-    case CSPActionType.updateSpots:
-      if (state.spotsProfile && action.payload.spots) {
-        // TODO: アップデートクエリによる更新
-        return {
-          spotsProfile: {
-            key: state.spotsProfile.key,
-            spots: action.payload.spots,
-          },
-        };
-      } else {
-        throw new Error();
-      }
-    default:
-      throw new Error();
-  }
-}
-
 export interface CSPStateAndReducer {
   currentSpotsProfile: CSPState;
   dispatchCSP: React.Dispatch<CSPAction>;
 }
 
-const initialCSP: CSPState = { spotsProfile: undefined };
+export interface CDPState {
+  dbscanProfile?: DbscanProfile;
+}
 
-const getCurrentSpotsProfileState = (): CSPStateAndReducer => {
-  const [currentSpotsProfile, dispatchCSP] = useReducer(reducer, initialCSP);
-  return { currentSpotsProfile, dispatchCSP };
-};
+export enum CDPActionType {
+  set,
+  update,
+}
+
+export interface CDPActionPayload {
+  dbscanProfile?: DbscanProfile;
+}
+
+export interface CDPAction {
+  type: CDPActionType;
+  payload: CDPActionPayload;
+}
+
+export interface CDPStateAndReducer {
+  currentDbscanProfile: CDPState;
+  dispatchCDP: React.Dispatch<CDPAction>;
+}
+
+const initialCSP: CSPState = { spotsProfile: undefined };
+const initialCDP: CDPState = { dbscanProfile: undefined };
 
 const calcForGoogleMap = (spots: Array<Spot>) => {
   const scaleConverter = 1.7;
@@ -153,7 +149,7 @@ export const ClusteringSpot = () => {
           client
             .query<SpotsProfiles>({
               query: QueryGetAllSpotsProfile,
-              fetchPolicy: 'network-only',
+              fetchPolicy: "network-only",
             })
             .catch((err) => {
               throw err;
@@ -172,8 +168,8 @@ export const ClusteringSpot = () => {
         container
         spacing={1}
         // rowSpacing={0}
-        justifyContent='center'
-        alignItems='flex-start'
+        justifyContent="center"
+        alignItems="flex-start"
       >
         <Grid>
           <SpotsProfileEditor

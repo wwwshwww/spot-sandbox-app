@@ -253,21 +253,25 @@ func (r *queryResolver) DbscanProfile(ctx context.Context, key int) (*model.Dbsc
 }
 
 // Dbscan is the resolver for the dbscan field.
-func (r *queryResolver) Dbscan(ctx context.Context, param model.DbscanParam) ([]*model.ClusterElement, error) {
+func (r *queryResolver) Dbscan(ctx context.Context, param model.DbscanParam) (*model.DbscanResult, error) {
 	dpr := dbscan_profile_mysql.New(r.DB)
 	spr := spots_profile_mysql.New(r.DB)
 	sr := spot_mysql.New(r.DB)
 	cs := domain_service.NewClusteringService(ctx, r.GMC, r.DiCC, r.DuCC)
 	ceuc := cluster_element.New(sr, dpr, spr, cs)
 
-	ces, err := ceuc.Calc(
+	count, ces, err := ceuc.Calc(
 		dbscan_profile_graph.UnmarshalIdentifier(param.DbscanProfileKey),
 		common.Map(spot_graph.UnmarshalIdentifier, param.SpotKeys),
 	)
 	if err != nil {
 		return nil, err
 	}
-	return cluster_element_graph.BatchMarshal(ces), nil
+
+	return &model.DbscanResult{
+		ClusterElements: cluster_element_graph.BatchMarshal(ces),
+		ClusterNum:      count,
+	}, nil
 }
 
 // Spots is the resolver for the spots field.

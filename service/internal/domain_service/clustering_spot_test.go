@@ -160,7 +160,7 @@ func TestDBScan(t *testing.T) {
 			for _, si := range tt.sp.Spots() {
 				spots[si] = spotMap[si]
 			}
-			ces, err := cs.DBScan(spots, tt.dp)
+			cnum, ces, err := cs.DBScan(spots, tt.dp)
 			assert.NoError(t, err)
 
 			countMap := make(map[int]int)
@@ -173,6 +173,7 @@ func TestDBScan(t *testing.T) {
 			}
 
 			assert.Equal(t, len(tt.expectCountMap), len(countMap))
+			assert.Equal(t, len(tt.expectCountMap), cnum)
 			for k, expected := range tt.expectCountMap {
 				actual, ok := countMap[k]
 				assert.True(t, ok)

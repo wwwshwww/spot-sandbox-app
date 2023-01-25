@@ -40,6 +40,11 @@ type ClusterElement {
 	paths: [ClusterElement!]!
 }
 
+type DbscanResult {
+  ClusterElements: [ClusterElement!]!
+  ClusterNum: Int!
+}
+
 type Query {
   spots: [Spot!]!
   dbscanProfiles: [DbscanProfile!]!
@@ -49,7 +54,7 @@ type Query {
   spotsProfile(key: Int!): SpotsProfile
   dbscanProfile(key: Int!): DbscanProfile
 
-  dbscan(param: DbscanParam!): [ClusterElement!]!
+  dbscan(param: DbscanParam!): DbscanResult!
 }
 
 """ TODO: profileのIDを指定するかたちではなく各パラメータを生で扱えるようにすべき """

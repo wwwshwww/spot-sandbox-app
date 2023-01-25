@@ -64,6 +64,11 @@ type ComplexityRoot struct {
 		MinutesThreshold func(childComplexity int) int
 	}
 
+	DbscanResult struct {
+		ClusterElements func(childComplexity int) int
+		ClusterNum      func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateDbscanProfile func(childComplexity int, input model.DbscanProfileParam) int
 		CreateSpot          func(childComplexity int, input model.LatLng) int
@@ -114,7 +119,7 @@ type QueryResolver interface {
 	Spot(ctx context.Context, key int) (*model.Spot, error)
 	SpotsProfile(ctx context.Context, key int) (*model.SpotsProfile, error)
 	DbscanProfile(ctx context.Context, key int) (*model.DbscanProfile, error)
-	Dbscan(ctx context.Context, param model.DbscanParam) ([]*model.ClusterElement, error)
+	Dbscan(ctx context.Context, param model.DbscanParam) (*model.DbscanResult, error)
 }
 type SpotsProfileResolver interface {
 	Spots(ctx context.Context, obj *model.SpotsProfile) ([]*model.Spot, error)
@@ -211,6 +216,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DbscanProfile.MinutesThreshold(childComplexity), true
+
+	case "DbscanResult.ClusterElements":
+		if e.complexity.DbscanResult.ClusterElements == nil {
+			break
+		}
+
+		return e.complexity.DbscanResult.ClusterElements(childComplexity), true
+
+	case "DbscanResult.ClusterNum":
+		if e.complexity.DbscanResult.ClusterNum == nil {
+			break
+		}
+
+		return e.complexity.DbscanResult.ClusterNum(childComplexity), true
 
 	case "Mutation.createDbscanProfile":
 		if e.complexity.Mutation.CreateDbscanProfile == nil {
@@ -1200,6 +1219,106 @@ func (ec *executionContext) fieldContext_DbscanProfile_minutesThreshold(ctx cont
 	return fc, nil
 }
 
+func (ec *executionContext) _DbscanResult_ClusterElements(ctx context.Context, field graphql.CollectedField, obj *model.DbscanResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DbscanResult_ClusterElements(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClusterElements, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ClusterElement)
+	fc.Result = res
+	return ec.marshalNClusterElement2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐClusterElementᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DbscanResult_ClusterElements(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DbscanResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "key":
+				return ec.fieldContext_ClusterElement_key(ctx, field)
+			case "dbscanProfile":
+				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
+			case "spot":
+				return ec.fieldContext_ClusterElement_spot(ctx, field)
+			case "assignedNumber":
+				return ec.fieldContext_ClusterElement_assignedNumber(ctx, field)
+			case "paths":
+				return ec.fieldContext_ClusterElement_paths(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ClusterElement", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DbscanResult_ClusterNum(ctx context.Context, field graphql.CollectedField, obj *model.DbscanResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DbscanResult_ClusterNum(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClusterNum, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DbscanResult_ClusterNum(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DbscanResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createDbscanProfile(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createDbscanProfile(ctx, field)
 	if err != nil {
@@ -1905,9 +2024,9 @@ func (ec *executionContext) _Query_dbscan(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.ClusterElement)
+	res := resTmp.(*model.DbscanResult)
 	fc.Result = res
-	return ec.marshalNClusterElement2ᚕᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐClusterElementᚄ(ctx, field.Selections, res)
+	return ec.marshalNDbscanResult2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_dbscan(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1918,18 +2037,12 @@ func (ec *executionContext) fieldContext_Query_dbscan(ctx context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "key":
-				return ec.fieldContext_ClusterElement_key(ctx, field)
-			case "dbscanProfile":
-				return ec.fieldContext_ClusterElement_dbscanProfile(ctx, field)
-			case "spot":
-				return ec.fieldContext_ClusterElement_spot(ctx, field)
-			case "assignedNumber":
-				return ec.fieldContext_ClusterElement_assignedNumber(ctx, field)
-			case "paths":
-				return ec.fieldContext_ClusterElement_paths(ctx, field)
+			case "ClusterElements":
+				return ec.fieldContext_DbscanResult_ClusterElements(ctx, field)
+			case "ClusterNum":
+				return ec.fieldContext_DbscanResult_ClusterNum(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type ClusterElement", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type DbscanResult", field.Name)
 		},
 	}
 	defer func() {
@@ -4472,6 +4585,41 @@ func (ec *executionContext) _DbscanProfile(ctx context.Context, sel ast.Selectio
 	return out
 }
 
+var dbscanResultImplementors = []string{"DbscanResult"}
+
+func (ec *executionContext) _DbscanResult(ctx context.Context, sel ast.SelectionSet, obj *model.DbscanResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dbscanResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DbscanResult")
+		case "ClusterElements":
+
+			out.Values[i] = ec._DbscanResult_ClusterElements(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "ClusterNum":
+
+			out.Values[i] = ec._DbscanResult_ClusterNum(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -5298,6 +5446,20 @@ func (ec *executionContext) marshalNDbscanProfile2ᚖgithubᚗcomᚋwwwwshwwwᚋ
 func (ec *executionContext) unmarshalNDbscanProfileParam2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanProfileParam(ctx context.Context, v interface{}) (model.DbscanProfileParam, error) {
 	res, err := ec.unmarshalInputDbscanProfileParam(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDbscanResult2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanResult(ctx context.Context, sel ast.SelectionSet, v model.DbscanResult) graphql.Marshaler {
+	return ec._DbscanResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDbscanResult2ᚖgithubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDbscanResult(ctx context.Context, sel ast.SelectionSet, v *model.DbscanResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DbscanResult(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNDistanceType2githubᚗcomᚋwwwwshwwwᚋspotᚑsandboxᚋgraphᚋmodelᚐDistanceType(ctx context.Context, v interface{}) (model.DistanceType, error) {

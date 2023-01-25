@@ -22,6 +22,11 @@ type DbscanProfileParam struct {
 	MinutesThreshold *int         `json:"minutesThreshold"`
 }
 
+type DbscanResult struct {
+	ClusterElements []*ClusterElement `json:"ClusterElements"`
+	ClusterNum      int               `json:"ClusterNum"`
+}
+
 type LatLng struct {
 	Lat float64 `json:"lat"`
 	Lng float64 `json:"lng"`

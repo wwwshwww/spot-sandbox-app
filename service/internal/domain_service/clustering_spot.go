@@ -26,6 +26,7 @@ type ClusteringService interface {
 		map[spot.Identifier]spot.Spot,
 		dbscan_profile.DbscanProfile,
 	) (
+		int,
 		[]cluster_element.ClusterElement,
 		error,
 	)
@@ -57,14 +58,15 @@ func (c *clusteringService) DBScan(
 	spots map[spot.Identifier]spot.Spot,
 	dbscanProfile dbscan_profile.DbscanProfile,
 ) (
+	int,
 	[]cluster_element.ClusterElement,
 	error,
 ) {
 	if dbscanProfile == nil {
-		return nil, errors.New("dbscan profile not found")
+		return 0, nil, errors.New("dbscan profile not found")
 	}
 	if len(spots) == 0 {
-		return nil, errors.New("zero spot")
+		return 0, nil, errors.New("zero spot")
 	}
 
 	// 対象地点を緯度で大きい順にソートする
@@ -123,7 +125,7 @@ func (c *clusteringService) DBScan(
 		)
 	}
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
 	/*
@@ -157,7 +159,7 @@ func (c *clusteringService) DBScan(
 			// clsNumのクラスタに所属させる
 			assigns[clsNum] = append(assigns[clsNum], cei)
 			if err := cei2ceMap[cei].UpdateAssignedNumber(clsNum); err != nil {
-				return nil, err
+				return 0, nil, err
 			}
 			if err := cei2ceMap[cei].UpdatePaths(common.Map(
 				func(i spot.Identifier) cluster_element.Identifier {
@@ -165,7 +167,7 @@ func (c *clusteringService) DBScan(
 				},
 				pathMap[si],
 			)); err != nil {
-				return nil, err
+				return 0, nil, err
 			}
 
 			// 近傍ノードの探索
@@ -185,7 +187,7 @@ func (c *clusteringService) DBScan(
 			// クラスタの要素数が最小個数に満たない場合はクラスタとみなさない
 			for _, cei := range assigns[clsNum] {
 				if err := cei2ceMap[cei].LackAssign(); err != nil {
-					return nil, err
+					return 0, nil, err
 				}
 			}
 		} else {
@@ -194,7 +196,11 @@ func (c *clusteringService) DBScan(
 		}
 	}
 
-	return clusterElements, nil
+	clusterCount := clsNum
+	if clusterElements[len(clusterElements)-1].AssignedNumber() != cluster_element.CLUSTER_LACK {
+		clusterCount -= 1
+	}
+	return clusterCount, clusterElements, nil
 }
 
 func (c *clusteringService) GetHubenys(

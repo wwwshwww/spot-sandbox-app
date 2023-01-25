@@ -11,7 +11,7 @@ import (
 // TODO: ClusterElementは値オブジェクトに近い存在なので集約ルートのClusterでusecaseを作成すべき
 
 type ClusterElementUsecase interface {
-	Calc(dbscan_profile.Identifier, []spot.Identifier) ([]cluster_element.ClusterElement, error)
+	Calc(dbscan_profile.Identifier, []spot.Identifier) (int, []cluster_element.ClusterElement, error)
 }
 
 func New(
@@ -39,21 +39,22 @@ func (u clusterElementUsecase) Calc(
 	dpi dbscan_profile.Identifier,
 	sis []spot.Identifier,
 ) (
+	int,
 	[]cluster_element.ClusterElement,
 	error,
 ) {
 	spots, err := u.sr.BulkGet(sis)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	dp, err := u.dpr.Get(dpi)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
-	ces, err := u.cs.DBScan(spots, dp)
+	count, ces, err := u.cs.DBScan(spots, dp)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	return ces, nil
+	return count, ces, nil
 }

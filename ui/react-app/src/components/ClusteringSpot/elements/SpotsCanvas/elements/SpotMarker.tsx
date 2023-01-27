@@ -1,36 +1,55 @@
 import { Marker } from "@react-google-maps/api";
 
-interface SpotMarkerProps {
-  color: {
-    fill: string;
-    fillOpacity: number;
-    stroke: string;
-    strokeOpacity: number;
+interface MarkerColor {
+  fill: string;
+  fillOpacity: number;
+  stroke: string;
+  strokeOpacity: number;
+}
 
-  };
+interface SpotMarkerProps {
+  color: MarkerColor;
   labelText: string;
   visible: boolean;
   latlng: {
     lat: number;
     lng: number;
   };
-  onClick?: ((e: google.maps.MapMouseEvent) => void);
+  onClick?: (e: google.maps.MapMouseEvent) => void;
 }
 
-export const getUnselectedColor = () => {
+export const getUnselectedColor = (): MarkerColor => {
   return {
     fill: "hsl(0, 0%, 75%)",
-    fillOpacity: 0.5,
+    fillOpacity: 0.4,
     stroke: "hsl(0, 0%, 45%)",
-    strokeOpacity: 0.5,
+    strokeOpacity: 0.45,
   };
 };
 
-export const getSelectedColor = () => {
+export const getSelectedColor = (): MarkerColor => {
   return {
-    fill: "hsl(0, 100%, 75%)",
+    fill: "hsl(0, 100%, 77%)",
+    fillOpacity: 0.5,
+    stroke: "hsl(0, 40%, 50%)",
+    strokeOpacity: 0.55,
+  };
+};
+
+export const getClusterColor = (base: number): MarkerColor => {
+  return {
+    fill: "hsl(" + base.toString() + ", 100%, 77%)",
     fillOpacity: 0.9,
-    stroke: "hsl(0, 40%, 45%)",
+    stroke: "hsl(" + base.toString() + ", 40%, 50%)",
+    strokeOpacity: 1,
+  };
+};
+
+export const getNotClusterColor = (): MarkerColor => {
+  return {
+    fill: "hsl(0, 0%, 57%)",
+    fillOpacity: 0.9,
+    stroke: "hsl(0, 0%, 40%)",
     strokeOpacity: 1,
   };
 };
@@ -40,11 +59,11 @@ export const SpotMarker = (props: SpotMarkerProps) => {
     <Marker
       onClick={props.onClick}
       icon={{
-        path: ' M 0 0 L -10 -30 A 10 12 1 0 1 10 -30 Z ',
+        path: " M 0 0 L -10 -30 A 10 12 1 0 1 10 -30 Z ",
         fillColor: props.color.fill,
         // fillColor: 'hsl(' + baseColor + ', 100%, 75%)',
         fillOpacity: props.color.fillOpacity,
-        strokeWeight: 1,
+        strokeWeight: 1.5,
         strokeColor: props.color.stroke,
         strokeOpacity: props.color.strokeOpacity,
         // strokeColor: 'hsl(' + baseColor + ', 40%, 45%)',
@@ -56,8 +75,8 @@ export const SpotMarker = (props: SpotMarkerProps) => {
       label={{
         color: "#333333",
         text: props.labelText,
-        fontSize: '11px',
-        fontWeight: '700',
+        fontSize: "11px",
+        fontWeight: "700",
       }}
     />
   );

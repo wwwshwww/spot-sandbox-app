@@ -1,7 +1,12 @@
 import { Box, Button } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2/Grid2";
 import { useEffect, useReducer, useState } from "react";
-import { DbscanProfile, Spot, SpotsProfile } from "../../generated/types";
+import {
+  ClusterElement,
+  DbscanProfile,
+  Spot,
+  SpotsProfile,
+} from "../../generated/types";
 import DbscanProfileEditor from "./elements/DbscanProfileEditor";
 import SpotsCanvas from "./elements/SpotsCanvas";
 import SpotsProfileEditor from "./elements/SpotsProfileEditor";
@@ -16,6 +21,8 @@ import {
   DbscanProfiles,
   QueryGetAllDbscanProfiles,
 } from "./elements/DbscanProfileEditor/hooks/GetAll";
+import { QueryDbscan } from "./elements/SpotsCanvas/hooks/Dbscan";
+import { DbscanResult } from "../../generates/types";
 
 export interface CSPState {
   spotsProfile?: SpotsProfile;
@@ -157,6 +164,11 @@ export const ClusteringSpot = () => {
     }
   );
 
+  const [clusterElements, setClusterElements] =
+    useState<Array<ClusterElement>>([]);
+  const [clusterNum, setClusterNum] = useState(0);
+  const [cLoading, setCLoading] = useState(false);
+
   const { loading: sLoading, error: sErr, spots } = GetSpots();
 
   useEffect(() => {
@@ -175,7 +187,7 @@ export const ClusteringSpot = () => {
         })
         .then(() => {
           client
-            .query<SpotsProfiles>({
+            .query({
               query: QueryGetAllSpotsProfile,
               fetchPolicy: "network-only",
             })
@@ -188,6 +200,40 @@ export const ClusteringSpot = () => {
         });
     }
   }, [currentSpotsProfile]);
+
+  useEffect(() => {
+    if (
+      currentDbscanProfile.dbscanProfile &&
+      currentSpotsProfile.spotsProfile
+    ) {
+      setCLoading(true);
+      client
+        .query({
+          query: QueryDbscan,
+          fetchPolicy: "network-only",
+          variables: {
+            param: {
+              dbscanProfileKey: currentDbscanProfile.dbscanProfile.key,
+              spotKeys: currentSpotsProfile.spotsProfile.spots.map((spot) => {
+                return spot.key;
+              }),
+            },
+          },
+        })
+        .catch((err) => {
+          throw err;
+        })
+        .then((res) => {
+          console.log(res!.data)
+          setClusterElements(res!.data.dbscan.ClusterElements);
+          setClusterNum(res!.data.dbscan.ClusterNum);
+          setCLoading(false);
+        });
+    } else {
+      setClusterElements([]);
+      setClusterNum(0);
+    }
+  }, [currentDbscanProfile, currentSpotsProfile]);
 
   return (
     <Box>
@@ -214,7 +260,10 @@ export const ClusteringSpot = () => {
             <p>loading...</p>
           ) : (
             <SpotsCanvas
+              isLoading={cLoading}
               initSpots={spots!}
+              clusterElements={clusterElements}
+              clusterNum={clusterNum}
               defaultGoogleMapParams={calcForGoogleMap(spots!)}
               currentSpotsProfileParams={{ currentSpotsProfile, dispatchCSP }}
               currentDbscanProfileParams={{ currentDbscanProfile, dispatchCDP }}

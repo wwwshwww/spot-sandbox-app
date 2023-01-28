@@ -14,7 +14,7 @@ import {
   QueryGetAllSpotsProfile,
   SpotsProfiles,
 } from "./elements/SpotsProfileEditor/hooks/GetAll";
-import { useGetAll as GetSpots } from "./elements/SpotsCanvas/hooks/GetAll";
+import { useGetAllSpot as GetSpots } from "./elements/SpotsCanvas/hooks/GetAllSpot";
 import { useApolloClient, useQuery } from "@apollo/client";
 import { MutationUpdateSpotsProfile } from "./elements/SpotsProfileEditor/hooks/Update";
 import {
@@ -75,27 +75,13 @@ const initialCSP: CSPState = { spotsProfile: undefined };
 const initialCDP: CDPState = { dbscanProfile: undefined };
 
 const calcForGoogleMap = (spots: Array<Spot>) => {
-  const scaleConverter = 1.7;
   let totalLat = 0;
   let totalLng = 0;
-  let maxLat = -999;
-  let maxLng = -999;
-  let minLat = 999;
-  let minLng = 999;
   for (const s of spots) {
     totalLat += s.lat;
     totalLng += s.lng;
-    maxLat = s.lat > maxLat ? s.lat : maxLat;
-    maxLng = s.lng > maxLng ? s.lng : maxLng;
-    minLat = s.lat < minLat ? s.lat : minLat;
-    minLng = s.lng < minLng ? s.lng : minLng;
   }
-
-  const diffLat = Math.abs(maxLat - minLat);
-  const diffLng = Math.abs(maxLng - minLng);
   return {
-    zoom:
-      diffLat > diffLng ? scaleConverter / diffLat : scaleConverter / diffLng,
     center: {
       lat: totalLat / spots.length,
       lng: totalLng / spots.length,
@@ -164,8 +150,9 @@ export const ClusteringSpot = () => {
     }
   );
 
-  const [clusterElements, setClusterElements] =
-    useState<Array<ClusterElement>>([]);
+  const [clusterElements, setClusterElements] = useState<Array<ClusterElement>>(
+    []
+  );
   const [clusterNum, setClusterNum] = useState(0);
   const [cLoading, setCLoading] = useState(false);
 
@@ -224,7 +211,6 @@ export const ClusteringSpot = () => {
           throw err;
         })
         .then((res) => {
-          console.log(res!.data)
           setClusterElements(res!.data.dbscan.ClusterElements);
           setClusterNum(res!.data.dbscan.ClusterNum);
           setCLoading(false);
@@ -246,14 +232,26 @@ export const ClusteringSpot = () => {
         alignItems="flex-start"
       >
         <Grid>
-          <SpotsProfileEditor
-            spotsProfilesParams={{
-              isLoading: spLoading,
-              error: spErr,
-              spotsProfiles,
-            }}
-            initCurrent={{ currentSpotsProfile, dispatchCSP }}
-          />
+          <Grid>
+            <SpotsProfileEditor
+              spotsProfilesParams={{
+                isLoading: spLoading,
+                error: spErr,
+                spotsProfiles,
+              }}
+              initCurrent={{ currentSpotsProfile, dispatchCSP }}
+            />
+          </Grid>
+          <Grid>
+            <DbscanProfileEditor
+              dbscanProfilesParams={{
+                isLoading: dpLoading,
+                error: dpErr,
+                dbscanProfiles,
+              }}
+              initCurrent={{ currentDbscanProfile, dispatchCDP }}
+            />
+          </Grid>
         </Grid>
         <Grid>
           {sLoading ? (
@@ -269,16 +267,6 @@ export const ClusteringSpot = () => {
               currentDbscanProfileParams={{ currentDbscanProfile, dispatchCDP }}
             />
           )}
-        </Grid>
-        <Grid>
-          <DbscanProfileEditor
-            dbscanProfilesParams={{
-              isLoading: dpLoading,
-              error: dpErr,
-              dbscanProfiles,
-            }}
-            initCurrent={{ currentDbscanProfile, dispatchCDP }}
-          />
         </Grid>
       </Grid>
     </Box>

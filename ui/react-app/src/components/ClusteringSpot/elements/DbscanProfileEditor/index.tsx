@@ -46,29 +46,45 @@ const DbscanProfileEditor = (props: EditorProps) => {
           border={1}
           borderRadius={1}
           paddingLeft={1}
-          textAlign='left'
+          textAlign="left"
           onClick={() => {
             if (v.key == currentDbscanProfile.dbscanProfile?.key) {
               dispatchCDP({
                 type: CDPActionType.set,
-                payload: { dbscanProfile: undefined},
+                payload: { dbscanProfile: undefined },
               });
             } else {
               dispatchCDP({
                 type: CDPActionType.set,
-                payload: { dbscanProfile: v},
+                payload: { dbscanProfile: v },
               });
             }
           }}
         >
-          {v.key}: {v.distanceType}<br/>
-          MinCount: {v.minCount}<br/>
-          MaxCount: {v.maxCount?v.maxCount:"-"}<br/>
+          {v.key}: {v.distanceType}
+          <br />
+          MinCount: {v.minCount}
+          <br />
+          MaxCount: {v.maxCount ? v.maxCount : "-"}
+          <br />
         </Card>
       </span>
     )
   );
-  const createButton = <Button href={"#dp:" + li?.length}>CREATE</Button>;
+  const createButton = (
+    <Button
+      onClick={() => {
+        window.location.href = "#dp:" + li?.length;
+        window.history.replaceState(
+          null,
+          "",
+          location.pathname + location.search
+        );
+      }}
+    >
+      CREATE
+    </Button>
+  );
 
   return (
     <>
@@ -76,7 +92,7 @@ const DbscanProfileEditor = (props: EditorProps) => {
         <p>loading...</p>
       ) : (
         <ScrollableList
-          title="dbscan profile"
+          title="clustering profile"
           contents={li!}
           footer={createButton}
         />

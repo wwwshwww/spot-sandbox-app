@@ -1,7 +1,7 @@
 import { gql, useQuery } from "@apollo/client";
 import { Spot } from "../../../../../generated/types";
 
-const QueryGetAllSpot = gql`
+export const QueryGetAllSpot = gql`
   query GetAllSpot {
     spots {
       key
@@ -16,7 +16,7 @@ interface Spots {
   spots: Array<Spot>;
 }
 
-export const useGetAll = () => {
+export const useGetAllSpot = () => {
   const { loading, error, data } = useQuery<Spots>(QueryGetAllSpot);
   const spots = data?.spots;
   return {loading, error, spots}

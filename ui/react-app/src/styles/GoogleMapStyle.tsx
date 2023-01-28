@@ -2,10 +2,10 @@ export { mapStyles, mapOptions };
 
 const mapStyles = {
   // margin: 20,
-  width: document.documentElement.clientWidth * 0.5,
-  height: document.documentElement.clientWidth * 0.5,
-  minWidth: 400,
-  minHeight: 400,
+  width: document.documentElement.clientWidth * 0.7,
+  height: document.documentElement.clientWidth * 0.7,
+  minWidth: 500,
+  minHeight: 500,
 };
 
 const mapOptions = {

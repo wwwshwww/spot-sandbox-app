@@ -9,7 +9,11 @@ import {
   CSPActionType,
   CSPStateAndReducer,
 } from "../..";
-import { ClusterElement, Spot } from "../../../../generated/types";
+import {
+  ClusterElement,
+  MutationCreateSpotArgs,
+  Spot,
+} from "../../../../generated/types";
 import { DbscanResult } from "../../../../generates/types";
 import { mapStyles, mapOptions } from "../../../../styles/GoogleMapStyle";
 import {
@@ -19,7 +23,9 @@ import {
   getUnselectedColor,
   SpotMarker,
 } from "./elements/SpotMarker";
+import { MutationCreateSpot } from "./hooks/CreateSpot";
 import { QueryDbscan } from "./hooks/Dbscan";
+import { QueryGetAllSpot } from "./hooks/GetAllSpot";
 
 const googleMapsApiKey = "APIKEY";
 
@@ -37,7 +43,6 @@ interface SpotsCanvasProps {
   clusterElements?: Array<ClusterElement>;
   clusterNum: number;
   defaultGoogleMapParams: {
-    zoom: number;
     center: { lat: number; lng: number };
   };
   currentSpotsProfileParams: CSPStateAndReducer;
@@ -49,7 +54,6 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
 
   const [spots, setSpots] = useState(props.initSpots);
   const [center, setCenter] = useState(props.defaultGoogleMapParams.center);
-  const [zoom, setZoom] = useState(props.defaultGoogleMapParams.zoom);
 
   const { currentSpotsProfile, dispatchCSP } = props.currentSpotsProfileParams;
   const { currentDbscanProfile, dispatchCDP } =
@@ -68,7 +72,6 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
   });
 
   const markers = spots?.map((v: Spot, i: number) => {
-    console.log(props.clusterElements);
     const isSelected = isSelectedMap[v.key] !== undefined;
     const element = clusterdMap[v.key];
     const payloadSpots = isSelected
@@ -110,10 +113,32 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
           <GoogleMap
             mapContainerStyle={mapStyles}
             options={mapOptions}
-            zoom={zoom}
+            zoom={5}
             center={center}
             onDblClick={(ev) => {
-              console.log("clicked");
+              client
+                .mutate({
+                  mutation: MutationCreateSpot,
+                  variables: {
+                    input: {
+                      lat: ev.latLng?.lat(),
+                      lng: ev.latLng?.lng(),
+                    },
+                  },
+                })
+                .then(() => { // 複数同時利用を想定し全取得しているが、本来必要ないかもしれない
+                  client
+                    .query({
+                      query: QueryGetAllSpot,
+                      fetchPolicy: "network-only",
+                    })
+                    .catch((err) => {
+                      throw err;
+                    })
+                    .then((res) => {
+                      setSpots(res!.data.spots);
+                    });
+                });
             }}
           >
             {markers}
@@ -123,14 +148,14 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
       {props.isLoading ? <LinearProgress color="inherit" /> : ``}
 
       <Grid>
-        {spots?.map((v: Spot, i: number) => (
+        {/* {spots?.map((v: Spot, i: number) => (
           <Item key={i} sx={{ textAlign: "left", paddingLeft: 1 }}>
             <Grid container>
               <Grid>{v.key}:</Grid>
               <Grid>{v.addressRepr}</Grid>
             </Grid>
           </Item>
-        ))}
+        ))} */}
       </Grid>
     </Grid>
   );

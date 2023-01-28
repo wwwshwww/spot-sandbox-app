@@ -46,7 +46,7 @@ const SpotsProfileEditor = (props: EditorProps) => {
           border={1}
           borderRadius={1}
           paddingLeft={1}
-          textAlign='left'
+          textAlign="left"
           onClick={() => {
             if (v.key == currentSpotsProfile.spotsProfile?.key) {
               dispatchCSP({
@@ -68,7 +68,20 @@ const SpotsProfileEditor = (props: EditorProps) => {
       </span>
     )
   );
-  const createButton = <Button href={"#sp:" + li?.length}>CREATE</Button>;
+  const createButton = (
+    <Button
+      onClick={() => {
+        window.location.href = "#sp:" + li?.length;
+        window.history.replaceState(
+          null,
+          "",
+          location.pathname + location.search
+        );
+      }}
+    >
+      CREATE
+    </Button>
+  );
 
   return (
     <>

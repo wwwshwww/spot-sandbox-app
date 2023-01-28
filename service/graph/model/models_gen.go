@@ -39,9 +39,9 @@ type SpotsProfileParam struct {
 type DistanceType string
 
 const (
-	DistanceTypeHubeny      DistanceType = "HUBENY"
-	DistanceTypeRouteLength DistanceType = "ROUTE_LENGTH"
-	DistanceTypeTravelTime  DistanceType = "TRAVEL_TIME"
+	DistanceTypeHubeny      DistanceType = "Hubeny"
+	DistanceTypeRouteLength DistanceType = "RouteLength"
+	DistanceTypeTravelTime  DistanceType = "TravelTime"
 )
 
 var AllDistanceType = []DistanceType{

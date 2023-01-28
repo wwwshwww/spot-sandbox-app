@@ -20,7 +20,7 @@ const ScrollableList: React.FC<ScrollableListProps> = (props) => {
           >
             {props.title}
           </Grid>
-          <Grid width={200}>
+          <Grid width={255}>
             <Box sx={{ border: 1, borderRadius: 1, borderColor: "#ddd" }}>
               <Grid
                 height={280}

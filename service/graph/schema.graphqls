@@ -5,9 +5,9 @@
 # TODO: To be the following specification: https://relay.dev/docs/guides/graphql-server-specification/
 
 enum DistanceType {
-  HUBENY
-  ROUTE_LENGTH
-  TRAVEL_TIME
+  Hubeny
+  RouteLength
+  TravelTime
 }
 
 type DbscanProfile {

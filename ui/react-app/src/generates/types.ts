@@ -52,9 +52,9 @@ export type DbscanResult = {
 };
 
 export enum DistanceType {
-  Hubeny = 'HUBENY',
-  RouteLength = 'ROUTE_LENGTH',
-  TravelTime = 'TRAVEL_TIME'
+  Hubeny = 'Hubeny',
+  RouteLength = 'RouteLength',
+  TravelTime = 'TravelTime'
 }
 
 export type LatLng = {

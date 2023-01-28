@@ -20,10 +20,10 @@ const ScrollableList: React.FC<ScrollableListProps> = (props) => {
           >
             {props.title}
           </Grid>
-          <Grid minWidth={200}>
+          <Grid width={200}>
             <Box sx={{ border: 1, borderRadius: 1, borderColor: "#ddd" }}>
               <Grid
-                maxHeight={250}
+                height={280}
                 paddingRight={1}
                 sx={{
                   overflowY: 'scroll',

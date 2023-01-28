@@ -224,7 +224,6 @@ export const ClusteringSpot = () => {
   return (
     <Box>
       <Grid
-        sx={{ flexGrow: 1 }}
         container
         spacing={1}
         // rowSpacing={0}

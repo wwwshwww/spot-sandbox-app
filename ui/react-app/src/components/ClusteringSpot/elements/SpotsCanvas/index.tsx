@@ -1,7 +1,7 @@
 import { useApolloClient } from "@apollo/client";
 import { LinearProgress, Paper, styled } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
-import { LoadScript, GoogleMap } from "@react-google-maps/api";
+import { LoadScript, GoogleMap, Polyline } from "@react-google-maps/api";
 import { useEffect, useState } from "react";
 import {
   CDPActionType,
@@ -59,21 +59,38 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
   const { currentDbscanProfile, dispatchCDP } =
     props.currentDbscanProfileParams;
 
-  const isSelectedMap: { [key: number]: boolean } = {};
+  const spotMap: Map<number, Spot> = new Map();
+  spots.forEach((element) => {
+    spotMap.set(element.key, element);
+  });
+
+  const isSelectedMap: Map<number, boolean> = new Map();
   if (currentSpotsProfile.spotsProfile !== undefined) {
     currentSpotsProfile.spotsProfile.spots!.forEach((element) => {
-      isSelectedMap[element.key] = true;
+      isSelectedMap.set(element.key, true);
     });
   }
 
-  const clusterdMap: { [key: number]: ClusterElement } = {};
+  const clusterdMap: Map<number, ClusterElement> = new Map();
   props.clusterElements?.forEach((element) => {
-    clusterdMap[element.spot.key] = element;
+    clusterdMap.set(element.spot.key, element);
+  });
+
+  let lineCount = 0;
+  const pathMap: Map<number, Array<number>> = new Map();
+  props.clusterElements?.forEach((element) => {
+    pathMap.set(
+      element.spot.key,
+      element.paths.map((c) => {
+        lineCount++;
+        return c.spot.key;
+      })
+    );
   });
 
   const markers = spots?.map((v: Spot, i: number) => {
-    const isSelected = isSelectedMap[v.key] !== undefined;
-    const element = clusterdMap[v.key];
+    const isSelected = isSelectedMap.get(v.key) !== undefined;
+    const element = clusterdMap.get(v.key);
     const payloadSpots = isSelected
       ? currentSpotsProfile.spotsProfile?.spots!.filter((s: Spot) => {
           return s.key !== v.key;
@@ -106,6 +123,41 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
     );
   });
 
+  const lines: Array<JSX.Element> = new Array(lineCount);
+  let cnt = 0;
+  pathMap.forEach((paths, fromSpotKey) => {
+    paths.forEach((destSpotKey) => {
+      const from = spotMap.get(fromSpotKey);
+      const dest = spotMap.get(destSpotKey);
+      const coords = [
+        { lat: from?.lat!, lng: from?.lng! },
+        { lat: dest?.lat!, lng: dest?.lng! },
+      ];
+      lines[cnt] = (
+        <Polyline
+          key={cnt}
+          path={coords}
+          options={{
+            strokeOpacity: 0.65,
+            strokeWeight: 1,
+            strokeColor: "#666666",
+            icons: [
+              {
+                icon: {
+                  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  scale: 2,
+                  fillOpacity: 0.85,
+                },
+                offset: "50%",
+              },
+            ],
+          }}
+        />
+      );
+      cnt++;
+    });
+  });
+
   return (
     <Grid spacing={2} justifyContent="center">
       <Item>
@@ -126,7 +178,8 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
                     },
                   },
                 })
-                .then(() => { // 複数同時利用を想定し全取得しているが、本来必要ないかもしれない
+                .then(() => {
+                  // 複数同時利用を想定し全取得しているが、本来必要ないかもしれない
                   client
                     .query({
                       query: QueryGetAllSpot,
@@ -142,6 +195,7 @@ const SpotsCanvas = (props: SpotsCanvasProps) => {
             }}
           >
             {markers}
+            {lines}
           </GoogleMap>
         </LoadScript>
       </Item>

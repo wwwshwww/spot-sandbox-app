@@ -92,15 +92,13 @@ const DbscanProfileEditor = (props: EditorProps) => {
           </Grid>
           <Grid padding={0}>
             <Stack>
-            <IconButton aria-label="delete" size="small">
-              <DeleteIcon />
-            </IconButton>
-            <IconButton aria-label="edit" size="small">
-              <EditIcon />
-            </IconButton>
+              <IconButton aria-label="delete" size="small">
+                <DeleteIcon />
+              </IconButton>
+              <IconButton aria-label="edit" size="small">
+                <EditIcon />
+              </IconButton>
             </Stack>
-            
-
           </Grid>
         </Grid>
       </span>

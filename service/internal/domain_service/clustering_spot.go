@@ -151,7 +151,7 @@ func (c *clusteringService) DBScan(
 		q.AppendLeft(ce.Identifier())
 		for q.Len() > 0 {
 			cei := q.PopLeft()
-			if isFull(assigns[clsNum]) {
+			if isFull(assigns[clsNum]) || cei2ceMap[cei].IsAssigned() {
 				continue
 			}
 			si := cei2siMap[cei]
